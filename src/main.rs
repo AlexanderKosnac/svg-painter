@@ -1,5 +1,5 @@
 fn main() {
-    println!("Hello, world!");
+    let args: Vec<String> = env::args().collect();
 
 fn store_svg_as_png(filepath: String, svg_data: &String, width: u32, height: u32) {
     let opt = usvg::Options::default();
