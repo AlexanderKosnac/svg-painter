@@ -3,11 +3,11 @@ name = "svg-painter"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+image = "0.24.1"
 resvg = "0.41.0"
 usvg = "0.41.0"
 fontdb = "0.16.2"
 tiny-skia = "0.11.4"
 tiny-skia-path = "0.11.4"
+rand = "0.8.5"
