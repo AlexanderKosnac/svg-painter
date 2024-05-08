@@ -67,7 +67,7 @@ impl Base {
     }
 
     pub fn express(&self) -> String {
-        return format!("<circle cx=\"{}\" cy=\"{}\" r=\"{}\" fill=\"{}\" fill-opacity=\"0.5\"/>", self.x, self.y, self.r, self.color.as_hex());
+        return format!("<circle cx=\"{}\" cy=\"{}\" r=\"{}\" fill-opacity=\"{:.3}\" fill=\"{}\"/>", self.x, self.y, self.r, (self.color.a as f64)/255.0, self.color.as_hex());
     }
 
     pub fn mutate(&mut self) {
