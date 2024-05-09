@@ -113,11 +113,25 @@ impl Genome {
 
     pub fn mutate(&mut self) {
         let mut rng = rand::thread_rng();
-        for base in &mut self.sequence {
-            if rng.gen::<f64>() > 0.9 {
-                base.mutate();
+        let mut new_sequence = Vec::new();
+        for base in &self.sequence {
+            let throw = rng.gen::<f64>();
+            let mut new_base = base.clone();
+            if throw > 0.9 {
+                new_base.mutate();
+            }
+            new_sequence.push(new_base);
+            if throw > 0.99 {
+                let mut insertion = base.clone();
+                insertion.mutate();
+                new_sequence.push(insertion);
             }
         }
+        self.sequence = new_sequence;
+    }
+
+    pub fn len(&self) -> usize {
+        return self.sequence.len();
     }
 }
 

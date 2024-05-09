@@ -52,7 +52,7 @@ fn main() {
         let fittest = &population[0..5];
 
         for individual in population.iter().take(5) {
-            println!("Individual: fitness {:.2}", individual.1);
+            println!("Individual: fitness {:.2}; Genome Size: {}", individual.1, individual.0.len());
         }
 
         if generation == n_generations {
