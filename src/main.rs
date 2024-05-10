@@ -11,10 +11,10 @@ use fontdb;
 use tiny_skia;
 use tiny_skia_path;
 
-mod genetic;
+pub mod genetic;
 use genetic::Genome;
 
-mod util;
+pub mod util;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
