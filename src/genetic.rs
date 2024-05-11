@@ -5,17 +5,29 @@ use rand::Rng;
 
 use crate::genetic::color::Rgba;
 
-pub struct Base {
+pub trait Base<T> {
+    pub fn new() -> T;
+    pub fn express(&self) -> String;
+    pub fn mutate(&self);
+}
+
+pub trait Genome<T> {
+    pub fn new() -> T;
+    pub fn express(&self) -> String;
+    pub fn mutate(&self);
+}
+
+pub struct CircleBase {
     x: u32,
     y: u32,
     r: u32,
     color: Rgba,
 }
 
-impl Base {
-    pub fn new(max_x: u32, max_y: u32) -> Base {
+impl CircleBase {
+    pub fn new(max_x: u32, max_y: u32) -> CircleBase {
         let mut rng = rand::thread_rng();
-        Base {
+        CircleBase {
             x: rng.gen_range(0..max_x),
             y: rng.gen_range(0..max_y),
             r: rng.gen_range(1..max_x/20),
@@ -36,9 +48,9 @@ impl Base {
     }
 }
 
-impl Clone for Base {
+impl Clone for CircleBase {
     fn clone(&self) -> Self {
-        Base {
+        CircleBase {
             x: self.x,
             y: self.y,
             r: self.r,
@@ -47,16 +59,16 @@ impl Clone for Base {
     }
 }
 
-pub struct Genome {
-    sequence: Vec<Base>,
+pub struct CircleGenome {
+    sequence: Vec<CircleBase>,
     width: u32,
     height: u32,
 }
 
-impl Genome {
-    pub fn new(genome_size: u32, width: u32, height: u32) -> Genome {
-        Genome {
-            sequence: (0..genome_size).map(|_| Base::new(width, height)).collect(),
+impl CircleGenome {
+    pub fn new(genome_size: u32, width: u32, height: u32) -> CircleGenome {
+        CircleGenome {
+            sequence: (0..genome_size).map(|_| CircleBase::new(width, height)).collect(),
             width: width,
             height: height,
         }
@@ -77,7 +89,9 @@ impl Genome {
             if throw > 0.9 {
                 new_base.mutate();
             }
-            new_sequence.push(new_base);
+            if throw < 0.995 {
+                new_sequence.push(new_base);
+            }
             if throw > 0.99 {
                 let mut insertion = base.clone();
                 insertion.mutate();
@@ -92,9 +106,9 @@ impl Genome {
     }
 }
 
-impl Clone for Genome {
+impl Clone for CircleGenome {
     fn clone(&self) -> Self {
-        Genome {
+        CircleGenome {
             sequence: self.sequence.clone(),
             width: self.width,
             height: self.height,
