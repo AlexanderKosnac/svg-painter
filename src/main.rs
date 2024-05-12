@@ -12,7 +12,7 @@ use tiny_skia;
 use tiny_skia_path;
 
 pub mod genetic;
-use genetic::Genome;
+use genetic::CircleGenome;
 
 pub mod util;
 
@@ -27,7 +27,7 @@ fn main() {
 
     let target = read_image(raster_image_path);
 
-    let mut population: Vec<(Genome, f64)> = (0..population_size).map(|_| (Genome::new(genome_size, target.width, target.height), 0.0)).collect();
+    let mut population: Vec<(CircleGenome, f64)> = (0..population_size).map(|_| (CircleGenome::new(genome_size, target.width, target.height), 0.0)).collect();
 
     let mut generation: u64 = 0;
     loop {
@@ -63,8 +63,8 @@ fn main() {
     }
 }
 
-fn setup_population(base_individuals: &[(Genome, f64)], population_size: u64) -> Vec<(Genome, f64)> {
-    let mut population: Vec<(Genome, f64)> = Vec::new();
+fn setup_population(base_individuals: &[(CircleGenome, f64)], population_size: u64) -> Vec<(CircleGenome, f64)> {
+    let mut population: Vec<(CircleGenome, f64)> = Vec::new();
 
     let individuals_per_genome = population_size / (base_individuals.len() as u64);
     for individual in base_individuals {

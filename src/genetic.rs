@@ -6,15 +6,15 @@ use rand::Rng;
 use crate::genetic::color::Rgba;
 
 pub trait Base<T> {
-    pub fn new() -> T;
-    pub fn express(&self) -> String;
-    pub fn mutate(&self);
+    fn new() -> T;
+    fn express(&self) -> String;
+    fn mutate(&self);
 }
 
 pub trait Genome<T> {
-    pub fn new() -> T;
-    pub fn express(&self) -> String;
-    pub fn mutate(&self);
+    fn new() -> T;
+    fn express(&self) -> String;
+    fn mutate(&self);
 }
 
 pub struct CircleBase {
