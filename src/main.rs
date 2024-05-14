@@ -25,6 +25,10 @@ fn main() {
     let genome_size = 500;
     let population_size = 50;
 
+    evolve(raster_image_path, n_generations, genome_size, population_size);
+}
+
+fn evolve(raster_image_path: &String, n_generations: u64, genome_size: u32, population_size: u64) {
     let target = read_image(raster_image_path);
 
     let mut population: Vec<(CircleGenome, f64)> = (0..population_size).map(|_| (CircleGenome::new(genome_size, target.width, target.height), 0.0)).collect();
