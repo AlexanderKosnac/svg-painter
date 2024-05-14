@@ -12,7 +12,7 @@ use tiny_skia;
 use tiny_skia_path;
 
 pub mod genetic;
-use genetic::CircleGenome;
+use genetic::{Genome, CircleGenome};
 
 pub mod util;
 
@@ -25,13 +25,13 @@ fn main() {
     let genome_size = 500;
     let population_size = 50;
 
-    evolve(raster_image_path, n_generations, genome_size, population_size);
+    evolve::<CircleGenome>(raster_image_path, n_generations, genome_size, population_size);
 }
 
-fn evolve(raster_image_path: &String, n_generations: u64, genome_size: u32, population_size: u64) {
+fn evolve<T: Genome + Clone>(raster_image_path: &String, n_generations: u64, genome_size: u32, population_size: u64) {
     let target = read_image(raster_image_path);
 
-    let mut population: Vec<(CircleGenome, f64)> = (0..population_size).map(|_| (CircleGenome::new(genome_size, target.width, target.height), 0.0)).collect();
+    let mut population: Vec<(T, f64)> = (0..population_size).map(|_| (T::new(genome_size, target.width, target.height), 0.0)).collect();
 
     let mut generation: u64 = 0;
     loop {
@@ -63,12 +63,12 @@ fn evolve(raster_image_path: &String, n_generations: u64, genome_size: u32, popu
             break;
         }
 
-        population = setup_population(fittest, population_size);
+        population = setup_population::<T>(fittest, population_size);
     }
 }
 
-fn setup_population(base_individuals: &[(CircleGenome, f64)], population_size: u64) -> Vec<(CircleGenome, f64)> {
-    let mut population: Vec<(CircleGenome, f64)> = Vec::new();
+fn setup_population<T: Genome + Clone>(base_individuals: &[(T, f64)], population_size: u64) -> Vec<(T, f64)> {
+    let mut population: Vec<(T, f64)> = Vec::new();
 
     let individuals_per_genome = population_size / (base_individuals.len() as u64);
     for individual in base_individuals {

@@ -5,16 +5,17 @@ use rand::Rng;
 
 use crate::genetic::color::Rgba;
 
-pub trait Base<T> {
-    fn new() -> T;
+pub trait Base {
+    fn new(max_x: u32, max_y: u32) -> Self;
     fn express(&self) -> String;
-    fn mutate(&self);
+    fn mutate(&mut self);
 }
 
-pub trait Genome<T> {
-    fn new() -> T;
+pub trait Genome {
+    fn new(genome_size: u32, width: u32, height: u32) -> Self;
     fn express(&self) -> String;
-    fn mutate(&self);
+    fn mutate(&mut self);
+    fn len(&self) -> usize;
 }
 
 pub struct CircleBase {
@@ -24,8 +25,8 @@ pub struct CircleBase {
     color: Rgba,
 }
 
-impl CircleBase {
-    pub fn new(max_x: u32, max_y: u32) -> CircleBase {
+impl Base for CircleBase {
+    fn new(max_x: u32, max_y: u32) -> Self {
         let mut rng = rand::thread_rng();
         CircleBase {
             x: rng.gen_range(0..max_x),
@@ -35,11 +36,11 @@ impl CircleBase {
         }
     }
 
-    pub fn express(&self) -> String {
+    fn express(&self) -> String {
         return format!("<circle cx=\"{}\" cy=\"{}\" r=\"{}\" fill-opacity=\"{:.3}\" fill=\"{}\"/>", self.x, self.y, self.r, (self.color.a as f64)/255.0, self.color.as_hex());
     }
 
-    pub fn mutate(&mut self) {
+    fn mutate(&mut self) {
         let mut rng = rand::thread_rng();
         self.x = self.x + rng.gen_range(0..10);
         self.y = self.y + rng.gen_range(0..10);
@@ -65,8 +66,8 @@ pub struct CircleGenome {
     height: u32,
 }
 
-impl CircleGenome {
-    pub fn new(genome_size: u32, width: u32, height: u32) -> CircleGenome {
+impl Genome for CircleGenome {
+    fn new(genome_size: u32, width: u32, height: u32) -> Self {
         CircleGenome {
             sequence: (0..genome_size).map(|_| CircleBase::new(width, height)).collect(),
             width: width,
@@ -74,13 +75,13 @@ impl CircleGenome {
         }
     }
 
-    pub fn express(&self) -> String {
+    fn express(&self) -> String {
         let expressed: Vec<String> = self.sequence.iter().map(|b| b.express()).collect();
         let expressed_string: String = expressed.join("\n");
         return format!("<svg width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">\n<rect width=\"100%\" height=\"100%\" fill=\"white\"/>\n{expressed_string}\n</svg>", self.width, self.height);
     }
 
-    pub fn mutate(&mut self) {
+    fn mutate(&mut self) {
         let mut rng = rand::thread_rng();
         let mut new_sequence = Vec::new();
         for base in &self.sequence {
@@ -101,7 +102,7 @@ impl CircleGenome {
         self.sequence = new_sequence;
     }
 
-    pub fn len(&self) -> usize {
+    fn len(&self) -> usize {
         return self.sequence.len();
     }
 }
