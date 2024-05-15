@@ -61,6 +61,7 @@ impl Clone for CircleBase {
             y: self.y,
             r: self.r,
             color: self.color.clone(),
+            max_r: self.max_r,
         }
     }
 }
@@ -83,7 +84,7 @@ impl Genome for CircleGenome {
     fn express(&self) -> String {
         let expressed: Vec<String> = self.sequence.iter().map(|b| b.express()).collect();
         let expressed_string: String = expressed.join("\n");
-        return format!("<svg width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">\n<rect width=\"100%\" height=\"100%\" fill=\"white\"/>\n{expressed_string}\n</svg>", self.width, self.height);
+        return format!("<svg width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">\n{expressed_string}\n</svg>", self.width, self.height);
     }
 
     fn mutate(&mut self) {
@@ -92,7 +93,7 @@ impl Genome for CircleGenome {
         for base in &self.sequence {
             let throw = rng.gen::<f64>();
             let mut new_base = base.clone();
-            if throw > 0.9 {
+            if throw > 0.8 {
                 new_base.mutate();
             }
             if throw < 0.995 {

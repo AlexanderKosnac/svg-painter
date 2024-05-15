@@ -23,7 +23,7 @@ fn main() {
     let n_generations = 10000000;
 
     let genome_size = 500;
-    let population_size = 50;
+    let population_size = 100;
 
     evolve::<CircleGenome>(raster_image_path, n_generations, genome_size, population_size);
 }
