@@ -6,3 +6,13 @@ pub fn bounded_add(a: u8, b: i64) -> u8 {
         a.checked_sub(-b as u8).unwrap_or(u8::MIN)
     }
 }
+
+pub fn bound<T: Ord>(value: T, min: T, max: T) -> T {
+    if value < min {
+        return min;
+    }
+    if value > max {
+        return max;
+    }
+    return value;
+}

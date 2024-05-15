@@ -4,6 +4,7 @@ use std::cmp;
 use rand::Rng;
 
 use crate::genetic::color::Rgba;
+use crate::util;
 
 pub trait Base {
     fn new(max_x: u32, max_y: u32) -> Self;
@@ -19,20 +20,23 @@ pub trait Genome {
 }
 
 pub struct CircleBase {
-    x: u32,
-    y: u32,
-    r: u32,
+    x: i32,
+    y: i32,
+    r: i32,
     color: Rgba,
+    max_r: u32,
 }
 
 impl Base for CircleBase {
     fn new(max_x: u32, max_y: u32) -> Self {
         let mut rng = rand::thread_rng();
+        let max_r = (max_x+max_y)/2/2;
         CircleBase {
-            x: rng.gen_range(0..max_x),
-            y: rng.gen_range(0..max_y),
-            r: rng.gen_range(1..max_x/20),
+            x: rng.gen_range(0..max_x) as i32,
+            y: rng.gen_range(0..max_y) as i32,
+            r: rng.gen_range(1..max_r) as i32,
             color: Rgba::new(rng.gen_range(0..255), rng.gen_range(0..255), rng.gen_range(0..255), rng.gen_range(0..255)),
+            max_r: max_r,
         }
     }
 
@@ -41,10 +45,11 @@ impl Base for CircleBase {
     }
 
     fn mutate(&mut self) {
+        let strength = 100;
         let mut rng = rand::thread_rng();
-        self.x = self.x + rng.gen_range(0..10);
-        self.y = self.y + rng.gen_range(0..10);
-        self.r = cmp::min(self.r + rng.gen_range(0..10), 20);
+        self.x = self.x + rng.gen_range(-strength..strength);
+        self.y = self.y + rng.gen_range(-strength..strength);
+        self.r = util::bound(self.r + rng.gen_range(-strength..strength), 1, self.max_r as i32);
         self.color.mutate(rng.gen_range(0.0..10.0));
     }
 }
