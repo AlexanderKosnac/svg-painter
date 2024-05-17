@@ -37,7 +37,7 @@ impl Base for CircleBase {
             x: rng.gen_range(0..max_x) as i32,
             y: rng.gen_range(0..max_y) as i32,
             r: rng.gen_range(1..max_r) as i32,
-            color: Rgba::new(rng.gen_range(0..255), rng.gen_range(0..255), rng.gen_range(0..255), rng.gen_range(0..255)),
+            color: Rgba::new_rand(),
             max_r: max_r,
         }
     }

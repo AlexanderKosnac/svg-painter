@@ -13,6 +13,11 @@ impl Rgba {
         Rgba { r: r, g: g, b: b, a: a }
     }
 
+    pub fn new_rand() -> Rgba {
+        let mut rng = rand::thread_rng();
+        Rgba::new(rng.gen_range(0..255), rng.gen_range(0..255), rng.gen_range(0..255), rng.gen_range(0..255))
+    }
+
     pub fn as_hex(&self) -> String {
         return format!("#{:X}{:X}{:X}", self.r, self.g, self.b);
     }
