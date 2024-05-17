@@ -7,7 +7,7 @@ pub fn bounded_add(a: u8, b: i64) -> u8 {
     }
 }
 
-pub fn bound<T: Ord>(value: T, min: T, max: T) -> T {
+pub fn clamp<T: Ord>(value: T, min: T, max: T) -> T {
     if value < min {
         return min;
     }
