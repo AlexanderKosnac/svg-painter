@@ -33,7 +33,7 @@ fn main() {
 fn evolve<T: Genome + Clone>(raster_image_path: &String, n_generations: u64, genome_size: u32, population_size: u64) {
     let target = read_image(raster_image_path);
 
-    let mut population: Vec<(T, u64)> = (0..population_size).map(|_| (T::new(genome_size, target.width(), target.height()), 0)).collect();
+    let mut population: Vec<(T, f64)> = (0..population_size).map(|_| (T::new(genome_size, target.width(), target.height()), 0.0)).collect();
 
     let mut generation: u64 = 0;
     loop {
@@ -66,42 +66,41 @@ fn evolve<T: Genome + Clone>(raster_image_path: &String, n_generations: u64, gen
     }
 }
 
-fn setup_population<T: Genome + Clone>(base_individuals: &[(T, u64)], population_size: u64) -> Vec<(T, u64)> {
-    let mut population: Vec<(T, u64)> = Vec::new();
+fn setup_population<T: Genome + Clone>(base_individuals: &[(T, f64)], population_size: u64) -> Vec<(T, f64)> {
+    let mut population: Vec<(T, f64)> = Vec::new();
 
-    let individuals_per_genome = population_size / (base_individuals.len() as u64);
+    let individuals_per_genome = population_size / base_individuals.len() as u64;
     for individual in base_individuals {
         for _ in 0..individuals_per_genome {
+        population.push((individual.0.clone(), 0.0));
             let mut new_genome = individual.0.clone();
             new_genome.mutate();
-            population.push((new_genome, 0));
+            population.push((new_genome, 0.0));
         }
     }
 
     return population;
 }
 
-fn pixmap_distance(d1: &tiny_skia::Pixmap, d2: &tiny_skia::Pixmap) -> u64 {
+fn pixmap_distance(d1: &tiny_skia::Pixmap, d2: &tiny_skia::Pixmap) -> f64 {
     if d1.width() != d2.width() || d1.height() != d2.height() {
         panic!("Pixmaps of different dimensions can not be compared. Got {}x{} and {}x{}.", d1.width(), d1.height(), d2.width(), d2.height());
     }
     let pixels1 = d1.pixels();
     let pixels2 = d2.pixels();
-    return (0..pixels1.len()).map(|i| coloru8_dot_product(&pixels1[i], &pixels2[i]) as u64).sum::<u64>();
+    return (0..pixels1.len()).map(|i| coloru8_norm_2(&pixels1[i], &pixels2[i]) as f64).map(|i| i*i).sum::<f64>().sqrt();
 }
 
-fn coloru8_dot_product(c1: &tiny_skia::PremultipliedColorU8, c2: &tiny_skia::PremultipliedColorU8) -> u32 {
-    return
-        (c1.red() as u32 * c2.red() as u32) +
-        (c1.green() as u32 * c2.green() as u32) +
-        (c1.blue() as u32 * c2.blue() as u32) +
-        (c1.alpha() as u32 * c2.alpha() as u32);
+fn coloru8_norm_2(c1: &tiny_skia::PremultipliedColorU8, c2: &tiny_skia::PremultipliedColorU8) -> f64 {
+    let dr = c1.red() as i32 - c2.red() as i32;
+    let dg = c1.green() as i32 - c2.green() as i32;
+    let db = c1.blue() as i32 - c2.blue() as i32;
+    let da = c1.alpha() as i32 - c2.alpha() as i32;
+    return ((dr*dr + dg*dg + db*db + da*da) as f64).sqrt() as f64;
 }
 
 fn read_image(path: &String) -> tiny_skia::Pixmap {
-    println!("-- {}", path);
     let path_obj = Path::new(path);
-    println!("++ {}", path_obj.display());
     return tiny_skia::Pixmap::load_png(&path_obj).expect("Failed to open image");
 }
 
