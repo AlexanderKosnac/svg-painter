@@ -47,12 +47,12 @@ impl Base for CircleBase {
     }
 
     fn mutate(&mut self) {
-        let strength = 100;
+        let m = 10;
         let mut rng = rand::thread_rng();
-        self.x = self.x + rng.gen_range(-strength..strength);
-        self.y = self.y + rng.gen_range(-strength..strength);
-        self.r = util::clamp(self.r + rng.gen_range(-strength..strength), 1, self.max_r as i32);
         self.color.mutate(rng.gen_range(0.0..10.0));
+        self.x = self.x + rng.gen_range(-m..m);
+        self.y = self.y + rng.gen_range(-m..m);
+        self.r = util::clamp(self.r + rng.gen_range(-m..m), 1, self.max_r as i32);
     }
 }
 
