@@ -13,7 +13,7 @@ use tiny_skia;
 use tiny_skia_path;
 
 pub mod genetic;
-use genetic::{Genome, CircleGenome};
+use genetic::{Genome, SvgElementGenome};
 
 pub mod util;
 
@@ -26,7 +26,7 @@ fn main() {
     let genome_size = 100;
     let population_size = 50;
 
-    evolve::<CircleGenome>(raster_image_path, n_generations, genome_size, population_size);
+    evolve::<SvgElementGenome>(raster_image_path, n_generations, genome_size, population_size);
 }
 
 fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u64, genome_size: u32, population_size: u64) {

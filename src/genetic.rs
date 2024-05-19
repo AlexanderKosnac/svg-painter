@@ -65,15 +65,15 @@ impl Clone for CircleBase {
     }
 }
 
-pub struct CircleGenome {
+pub struct SvgElementGenome {
     sequence: Vec<CircleBase>,
     width: u32,
     height: u32,
 }
 
-impl Genome for CircleGenome {
+impl Genome for SvgElementGenome {
     fn new(genome_size: u32, width: u32, height: u32) -> Self {
-        CircleGenome {
+        Self {
             sequence: (0..genome_size).map(|_| CircleBase::new(width, height)).collect(),
             width: width,
             height: height,
@@ -93,6 +93,12 @@ impl Genome for CircleGenome {
                 base.mutate();
             }
         }
+        /*
+        let roll = rng.gen::<f64>();
+        if rng.gen::<f64>() > 0.5 {
+            self.sequence.push(CircleBase::new(self.width, self.height));
+        }
+        */
     }
 
     fn len(&self) -> usize {
@@ -100,9 +106,9 @@ impl Genome for CircleGenome {
     }
 }
 
-impl Clone for CircleGenome {
+impl Clone for SvgElementGenome {
     fn clone(&self) -> Self {
-        CircleGenome {
+        Self {
             sequence: self.sequence.clone(),
             width: self.width,
             height: self.height,
@@ -110,4 +116,4 @@ impl Clone for CircleGenome {
     }
 }
 
-unsafe impl Send for CircleGenome {}
+unsafe impl Send for SvgElementGenome {}
