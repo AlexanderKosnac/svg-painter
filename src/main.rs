@@ -13,7 +13,8 @@ use tiny_skia;
 use tiny_skia_path;
 
 pub mod genetic;
-use genetic::{Genome, SvgElementGenome, CircleBase};
+use genetic::Genome;
+use genetic::svg::*;
 
 pub mod util;
 
