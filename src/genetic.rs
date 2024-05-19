@@ -30,7 +30,7 @@ impl Base for CircleBase {
     fn new(max_x: u32, max_y: u32) -> Self {
         let mut rng = rand::thread_rng();
         let max_r = (max_x+max_y)/2/16;
-        CircleBase {
+        Self {
             x: rng.gen_range(0..max_x) as i32,
             y: rng.gen_range(0..max_y) as i32,
             r: rng.gen_range(1..max_r) as i32,
@@ -55,7 +55,7 @@ impl Base for CircleBase {
 
 impl Clone for CircleBase {
     fn clone(&self) -> Self {
-        CircleBase {
+        Self {
             x: self.x,
             y: self.y,
             r: self.r,
@@ -65,16 +65,16 @@ impl Clone for CircleBase {
     }
 }
 
-pub struct SvgElementGenome {
-    sequence: Vec<CircleBase>,
+pub struct SvgElementGenome<T: Base> {
+    sequence: Vec<T>,
     width: u32,
     height: u32,
 }
 
-impl Genome for SvgElementGenome {
+impl<T: Base> Genome for SvgElementGenome<T> {
     fn new(genome_size: u32, width: u32, height: u32) -> Self {
         Self {
-            sequence: (0..genome_size).map(|_| CircleBase::new(width, height)).collect(),
+            sequence: (0..genome_size).map(|_| T::new(width, height)).collect(),
             width: width,
             height: height,
         }
@@ -106,7 +106,7 @@ impl Genome for SvgElementGenome {
     }
 }
 
-impl Clone for SvgElementGenome {
+impl<T: Base + Clone> Clone for SvgElementGenome<T> {
     fn clone(&self) -> Self {
         Self {
             sequence: self.sequence.clone(),
@@ -116,4 +116,4 @@ impl Clone for SvgElementGenome {
     }
 }
 
-unsafe impl Send for SvgElementGenome {}
+unsafe impl<T: Base> Send for SvgElementGenome<T> {}
