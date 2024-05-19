@@ -5,7 +5,7 @@ use std::io::Write;
 use std::path::Path;
 
 use image::{GenericImageView};
-use tiny_skia::{PremultipliedColorU8, ColorU8};
+use tiny_skia::PremultipliedColorU8;
 
 use resvg;
 use usvg;
@@ -24,13 +24,16 @@ fn main() {
     let raster_image_path = &args[1];
     let n_generations = 10000000;
 
-    let genome_size = 500;
-    let population_size = 100;
+    let genome_size = 100;
+    let population_size = 50;
 
     evolve::<CircleGenome>(raster_image_path, n_generations, genome_size, population_size);
 }
 
 fn evolve<T: Genome + Clone>(raster_image_path: &String, n_generations: u64, genome_size: u32, population_size: u64) {
+    let dir = String::from("build");
+    fs::create_dir_all(&dir).expect("Unable to create build directory");
+
     let target = read_image(raster_image_path);
 
     let mut population: Vec<(T, f64)> = (0..population_size).map(|_| (T::new(genome_size, target.width(), target.height()), 0.0)).collect();
@@ -39,23 +42,18 @@ fn evolve<T: Genome + Clone>(raster_image_path: &String, n_generations: u64, gen
     loop {
         generation += 1;
         println!("Generation {}; {} individuals", generation, population.len());
-        let dir = format!("build/generation_{:0>3}", generation);
-        fs::create_dir_all(&dir).expect("Unable to create generation directory");
-
-        let mut i = 0;
         for individual in &mut population {
             let svg_data = individual.0.express();
             let mut candidate = tiny_skia::Pixmap::new(target.width(), target.height()).unwrap();
             render_svg_into_pixmap(&svg_data, &mut candidate);
             individual.1 = pixmap_distance(&candidate, &target);
-            i += 1;
         }
 
         population.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
         let fittest = &population[0..5];
 
-        for individual in population.iter().take(5) {
-            println!("Individual: fitness {:.2}; Genome Size: {}", individual.1, individual.0.len());
+        for individual in population.iter().take(1) {
+            println!("Individual: fitness {:.2}/{min_fitness}; Genome Size: {}", individual.1, individual.0.len());
         }
 
         if generation == n_generations {
@@ -71,8 +69,8 @@ fn setup_population<T: Genome + Clone>(base_individuals: &[(T, f64)], population
 
     let individuals_per_genome = population_size / base_individuals.len() as u64;
     for individual in base_individuals {
-        for _ in 0..individuals_per_genome {
         population.push((individual.0.clone(), 0.0));
+        for _ in 0..(individuals_per_genome-1) {
             let mut new_genome = individual.0.clone();
             new_genome.mutate();
             population.push((new_genome, 0.0));
