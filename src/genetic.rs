@@ -15,6 +15,7 @@ pub trait Genome {
     fn new(genome_size: u32, width: u32, height: u32) -> Self;
     fn express(&self) -> String;
     fn mutate(&mut self);
+    fn insertion(&mut self);
     fn len(&self) -> usize;
 }
 
@@ -93,12 +94,10 @@ impl<T: Base> Genome for SvgElementGenome<T> {
                 base.mutate();
             }
         }
-        /*
-        let roll = rng.gen::<f64>();
-        if rng.gen::<f64>() > 0.5 {
-            self.sequence.push(CircleBase::new(self.width, self.height));
-        }
-        */
+    }
+
+    fn insertion(&mut self) {
+        self.sequence.push(T::new(self.width, self.height));
     }
 
     fn len(&self) -> usize {

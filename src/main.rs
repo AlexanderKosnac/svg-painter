@@ -23,7 +23,7 @@ fn main() {
     let raster_image_path = &args[1];
     let n_generations = 10000000;
 
-    let genome_size = 100;
+    let genome_size = 1;
     let population_size = 50;
 
     evolve::<SvgElementGenome<CircleBase>>(raster_image_path, n_generations, genome_size, population_size);
@@ -40,6 +40,7 @@ fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u
 
     let mut population: Vec<(T, f64)> = (0..population_size).map(|_| (T::new(genome_size, dim.0, dim.1), 0.0)).collect();
 
+    let mut history = vec![0.0; 30];
     let mut generation: u64 = 0;
     loop {
         generation += 1;
@@ -53,6 +54,9 @@ fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u
 
         population.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
         let fittest = &population[0..5];
+        let avg_fitness = fittest.iter().map(|it| it.1).sum::<f64>()/fittest.len() as f64;
+        history.push(avg_fitness);
+
         if generation % 10 == 0 {
             for individual in population.iter().take(1) {
                 println!("Individual: fitness {:.2}/{min_fitness}; Genome Size: {}", individual.1, individual.0.len());
@@ -68,18 +72,22 @@ fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u
             }
         }
 
+        let last_idx = history.len();
+        let fitness_converges = (0..30).all(|i| (history[last_idx-i-2] - avg_fitness).abs() < 5.0);
 
+        if fitness_converges {
+            println!("Convergence at {:.2}", avg_fitness);
         }
 
         if generation == n_generations {
             break;
         }
 
-        population = setup_population::<T>(fittest, population_size);
+        population = setup_population::<T>(fittest, population_size, fitness_converges);
     }
 }
 
-fn setup_population<T: Genome + Clone + Send>(base_individuals: &[(T, f64)], population_size: u64) -> Vec<(T, f64)> {
+fn setup_population<T: Genome + Clone + Send>(base_individuals: &[(T, f64)], population_size: u64, do_insertion: bool) -> Vec<(T, f64)> {
     let mut population: Vec<(T, f64)> = Vec::new();
 
     let individuals_per_genome = population_size / base_individuals.len() as u64;
@@ -88,6 +96,9 @@ fn setup_population<T: Genome + Clone + Send>(base_individuals: &[(T, f64)], pop
         for _ in 0..(individuals_per_genome-1) {
             let mut new_genome = individual.0.clone();
             new_genome.mutate();
+            if do_insertion {
+                new_genome.insertion();
+            }
             population.push((new_genome, 0.0));
         }
     }
