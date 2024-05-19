@@ -33,10 +33,12 @@ fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u
     let dir = String::from("build");
     fs::create_dir_all(&dir).expect("Unable to create build directory");
 
+    fs::copy(raster_image_path, format!("{dir}/trgt.png")).expect("Could not copy target file");
+
     let target = read_image(raster_image_path);
     let dim = (target.width(), target.height());
 
-    let min_fitness = dim.0 * dim.1 * 510; // 510 = sqrt((255-0)^2 + (255-0)^2 + (255-0)^2 + (255-0)^2)
+    let min_fitness: u64 = dim.0 as u64 * dim.1 as u64 * 510; // 510 = sqrt((255-0)^2 + (255-0)^2 + (255-0)^2 + (255-0)^2)
 
     let mut population: Vec<(T, f64)> = (0..population_size).map(|_| (T::new(genome_size, dim.0, dim.1), 0.0)).collect();
 
@@ -44,7 +46,7 @@ fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u
     let mut generation: u64 = 0;
     loop {
         generation += 1;
-        println!("Generation {}; {} individuals", generation, population.len());
+        println!("Generation {}; {} individuals; avg. f.: {:.2}", generation, population.len(), history[history.len()-1]);
 
         population.par_iter_mut().for_each(|individual| {
             let mut candidate = tiny_skia::Pixmap::new(dim.0, dim.1).unwrap();
