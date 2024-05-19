@@ -3,10 +3,7 @@ pub mod color;
 use std::cmp;
 use rand::Rng;
 
-use delaunator::{Point, triangulate};
-
 use crate::genetic::color::Rgba;
-use crate::util;
 
 pub trait Base {
     fn new(max_x: u32, max_y: u32) -> Self;

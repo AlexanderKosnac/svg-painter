@@ -6,9 +6,6 @@ use std::path::Path;
 
 use rayon::prelude::*;
 
-use image::{GenericImageView};
-use tiny_skia::PremultipliedColorU8;
-
 use resvg;
 use usvg;
 use fontdb;
@@ -59,15 +56,14 @@ fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u
 
         for individual in population.iter().take(1) {
             println!("Individual: fitness {:.2}/{min_fitness}; Genome Size: {}", individual.1, individual.0.len());
-            //let base = format!("{}/gen_{}_expr_{:0>4}", dir, generation, i);
             let base = format!("{}/expr", dir);
             let expression = individual.0.express();
 
-            //let mut f = File::create(format!("{base}.svg")).expect("Unable to create SVG file");
-            //f.write_all(expression.as_bytes()).expect("Unable to write data");
+            let mut f = File::create(format!("{base}.svg")).expect("Unable to create SVG file");
+            f.write_all(expression.as_bytes()).expect("Unable to write data");
 
             let mut candidate = tiny_skia::Pixmap::new(dim.0, dim.1).unwrap();
-            render_svg_into_pixmap(&individual.0.express(), &mut candidate);
+            render_svg_into_pixmap(&expression, &mut candidate);
             candidate.save_png(format!("{base}.png")).expect("Unable to create PNG file");
         }
 
