@@ -9,11 +9,11 @@ pub struct Rgba {
 }
 
 impl Rgba {
-    pub fn new(r: u8, g: u8, b: u8, a: u8) -> Rgba {
-        Rgba { r: r, g: g, b: b, a: a }
+    pub fn new(r: u8, g: u8, b: u8, a: u8) -> Self {
+        Self { r: r, g: g, b: b, a: a }
     }
 
-    pub fn new_rand() -> Rgba {
+    pub fn new_rand() -> Self {
         let mut rng = rand::thread_rng();
         Rgba::new(rng.gen_range(0..255), rng.gen_range(0..255), rng.gen_range(0..255), rng.gen_range(0..255))
     }
