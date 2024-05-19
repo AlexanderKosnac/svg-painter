@@ -52,6 +52,63 @@ impl Clone for CircleBase {
     }
 }
 
+pub struct TriangleBase {
+    x1: i32,
+    y1: i32,
+    x2: i32,
+    y2: i32,
+    x3: i32,
+    y3: i32,
+    color: Rgba,
+}
+
+impl Base for TriangleBase {
+    fn new(max_x: u32, max_y: u32) -> Self {
+        let mut rng = rand::thread_rng();
+        Self {
+            x1: rng.gen_range(0..max_x) as i32,
+            y1: rng.gen_range(0..max_y) as i32,
+            x2: rng.gen_range(0..max_x) as i32,
+            y2: rng.gen_range(0..max_y) as i32,
+            x3: rng.gen_range(0..max_x) as i32,
+            y3: rng.gen_range(0..max_y) as i32,
+            color: Rgba::new_rand(),
+        }
+    }
+
+    fn express(&self) -> String {
+        let point_seq = format!("{},{} {},{} {},{}", self.x1, self.y1, self.x2, self.y2, self.x3, self.y3);
+        return format!("<polygon points=\"{}\" fill-opacity=\"{:.3}\" fill=\"{}\"/>", point_seq, (self.color.a as f64)/255.0, self.color.as_hex());
+        
+    }
+
+    fn mutate(&mut self) {
+        let m = 5;
+        let mut rng = rand::thread_rng();
+        self.x1 = self.x1 + rng.gen_range(-m..m);
+        self.y1 = self.y1 + rng.gen_range(-m..m);
+        self.x2 = self.x2 + rng.gen_range(-m..m);
+        self.y2 = self.y2 + rng.gen_range(-m..m);
+        self.x3 = self.x3 + rng.gen_range(-m..m);
+        self.y3 = self.y3 + rng.gen_range(-m..m);
+        self.color.mutate(rng.gen_range(0.0..20.0));
+    }
+}
+
+impl Clone for TriangleBase {
+    fn clone(&self) -> Self {
+        Self {
+            x1: self.x1,
+            y1: self.y1,
+            x2: self.x2,
+            y2: self.y2,
+            x3: self.x3,
+            y3: self.y3,
+            color: self.color.clone(),
+        }
+    }
+}
+
 pub struct SvgElementGenome<T: Base> {
     sequence: Vec<T>,
     width: u32,
