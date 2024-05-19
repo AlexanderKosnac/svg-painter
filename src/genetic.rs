@@ -32,7 +32,7 @@ pub struct CircleBase {
 impl Base for CircleBase {
     fn new(max_x: u32, max_y: u32) -> Self {
         let mut rng = rand::thread_rng();
-        let max_r = (max_x+max_y)/2/2;
+        let max_r = (max_x+max_y)/2/16;
         CircleBase {
             x: rng.gen_range(0..max_x) as i32,
             y: rng.gen_range(0..max_y) as i32,
@@ -49,10 +49,10 @@ impl Base for CircleBase {
     fn mutate(&mut self) {
         let m = 10;
         let mut rng = rand::thread_rng();
-        self.color.mutate(rng.gen_range(0.0..10.0));
         self.x = self.x + rng.gen_range(-m..m);
         self.y = self.y + rng.gen_range(-m..m);
-        self.r = util::clamp(self.r + rng.gen_range(-m..m), 1, self.max_r as i32);
+        self.r = cmp::max(self.r + rng.gen_range(-m..m), 1);
+        self.color.mutate(rng.gen_range(0.0..10.0));
     }
 }
 
@@ -86,28 +86,16 @@ impl Genome for CircleGenome {
     fn express(&self) -> String {
         let expressed: Vec<String> = self.sequence.iter().map(|b| b.express()).collect();
         let expressed_string: String = expressed.join("\n");
-        return format!("<svg width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">\n{expressed_string}\n</svg>", self.width, self.height);
+        return format!("<svg width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">\n<rect width=\"100%\" height=\"100%\" fill=\"white\"/>\n{expressed_string}\n</svg>", self.width, self.height);
     }
 
     fn mutate(&mut self) {
         let mut rng = rand::thread_rng();
-        let mut new_sequence = Vec::new();
-        for base in &self.sequence {
-            let throw = rng.gen::<f64>();
-            let mut new_base = base.clone();
-            if throw > 0.8 {
-                new_base.mutate();
-            }
-            if throw < 0.995 {
-                new_sequence.push(new_base);
-            }
-            if throw > 0.99 {
-                let mut insertion = base.clone();
-                insertion.mutate();
-                new_sequence.push(insertion);
+        for base in &mut self.sequence {
+            if rng.gen::<f64>() > 0.95 {
+                base.mutate();
             }
         }
-        self.sequence = new_sequence;
     }
 
     fn len(&self) -> usize {
