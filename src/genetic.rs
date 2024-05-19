@@ -124,3 +124,5 @@ impl Clone for CircleGenome {
         }
     }
 }
+
+unsafe impl Send for CircleGenome {}

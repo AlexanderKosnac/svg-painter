@@ -4,6 +4,8 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
+use rayon::prelude::*;
+
 use image::{GenericImageView};
 use tiny_skia::PremultipliedColorU8;
 
@@ -30,30 +32,43 @@ fn main() {
     evolve::<CircleGenome>(raster_image_path, n_generations, genome_size, population_size);
 }
 
-fn evolve<T: Genome + Clone>(raster_image_path: &String, n_generations: u64, genome_size: u32, population_size: u64) {
+fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u64, genome_size: u32, population_size: u64) {
     let dir = String::from("build");
     fs::create_dir_all(&dir).expect("Unable to create build directory");
 
     let target = read_image(raster_image_path);
+    let dim = (target.width(), target.height());
 
-    let mut population: Vec<(T, f64)> = (0..population_size).map(|_| (T::new(genome_size, target.width(), target.height()), 0.0)).collect();
+    let min_fitness = dim.0 * dim.1 * 510; // 510 = sqrt((255-0)^2 + (255-0)^2 + (255-0)^2 + (255-0)^2)
+
+    let mut population: Vec<(T, f64)> = (0..population_size).map(|_| (T::new(genome_size, dim.0, dim.1), 0.0)).collect();
 
     let mut generation: u64 = 0;
     loop {
         generation += 1;
         println!("Generation {}; {} individuals", generation, population.len());
-        for individual in &mut population {
-            let svg_data = individual.0.express();
-            let mut candidate = tiny_skia::Pixmap::new(target.width(), target.height()).unwrap();
-            render_svg_into_pixmap(&svg_data, &mut candidate);
+
+        population.par_iter_mut().for_each(|individual| {
+            let mut candidate = tiny_skia::Pixmap::new(dim.0, dim.1).unwrap();
+            render_svg_into_pixmap(&individual.0.express(), &mut candidate);
             individual.1 = pixmap_distance(&candidate, &target);
-        }
+        });
 
         population.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
         let fittest = &population[0..5];
 
         for individual in population.iter().take(1) {
             println!("Individual: fitness {:.2}/{min_fitness}; Genome Size: {}", individual.1, individual.0.len());
+            //let base = format!("{}/gen_{}_expr_{:0>4}", dir, generation, i);
+            let base = format!("{}/expr", dir);
+            let expression = individual.0.express();
+
+            //let mut f = File::create(format!("{base}.svg")).expect("Unable to create SVG file");
+            //f.write_all(expression.as_bytes()).expect("Unable to write data");
+
+            let mut candidate = tiny_skia::Pixmap::new(dim.0, dim.1).unwrap();
+            render_svg_into_pixmap(&individual.0.express(), &mut candidate);
+            candidate.save_png(format!("{base}.png")).expect("Unable to create PNG file");
         }
 
         if generation == n_generations {
@@ -64,7 +79,7 @@ fn evolve<T: Genome + Clone>(raster_image_path: &String, n_generations: u64, gen
     }
 }
 
-fn setup_population<T: Genome + Clone>(base_individuals: &[(T, f64)], population_size: u64) -> Vec<(T, f64)> {
+fn setup_population<T: Genome + Clone + Send>(base_individuals: &[(T, f64)], population_size: u64) -> Vec<(T, f64)> {
     let mut population: Vec<(T, f64)> = Vec::new();
 
     let individuals_per_genome = population_size / base_individuals.len() as u64;
