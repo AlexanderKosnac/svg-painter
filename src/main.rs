@@ -53,18 +53,22 @@ fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u
 
         population.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
         let fittest = &population[0..5];
+        if generation % 10 == 0 {
+            for individual in population.iter().take(1) {
+                println!("Individual: fitness {:.2}/{min_fitness}; Genome Size: {}", individual.1, individual.0.len());
+                let base = format!("{}/expr", dir);
+                let expression = individual.0.express();
 
-        for individual in population.iter().take(1) {
-            println!("Individual: fitness {:.2}/{min_fitness}; Genome Size: {}", individual.1, individual.0.len());
-            let base = format!("{}/expr", dir);
-            let expression = individual.0.express();
+                let mut f = File::create(format!("{base}.svg")).expect("Unable to create SVG file");
+                f.write_all(expression.as_bytes()).expect("Unable to write data");
 
-            let mut f = File::create(format!("{base}.svg")).expect("Unable to create SVG file");
-            f.write_all(expression.as_bytes()).expect("Unable to write data");
+                let mut candidate = tiny_skia::Pixmap::new(dim.0, dim.1).unwrap();
+                render_svg_into_pixmap(&expression, &mut candidate);
+                candidate.save_png(format!("{base}.png")).expect("Unable to create PNG file");
+            }
+        }
 
-            let mut candidate = tiny_skia::Pixmap::new(dim.0, dim.1).unwrap();
-            render_svg_into_pixmap(&expression, &mut candidate);
-            candidate.save_png(format!("{base}.png")).expect("Unable to create PNG file");
+
         }
 
         if generation == n_generations {
