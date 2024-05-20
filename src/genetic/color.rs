@@ -19,7 +19,7 @@ impl Rgba {
     }
 
     pub fn as_hex(&self) -> String {
-        return format!("#{:X}{:X}{:X}", self.r, self.g, self.b);
+        return format!("#{:0>2X}{:0>2X}{:0>2X}", self.r, self.g, self.b);
     }
 
     pub fn mutate(&mut self, magnitude: f64) {
