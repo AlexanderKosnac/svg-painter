@@ -193,11 +193,9 @@ impl<T: Base> Genome for SvgElementGenome<T> {
 
     fn mutate(&mut self) {
         let mut rng = rand::thread_rng();
-        for base in &mut self.sequence {
-            if rng.gen::<f64>() > 0.95 {
-                base.mutate();
-            }
-        }
+        let idx = rng.gen_range(0..self.sequence.len()) as usize;
+        let mut candidate = &mut self.sequence[idx];
+        candidate.mutate();
     }
 
     fn insertion(&mut self) {
