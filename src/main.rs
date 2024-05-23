@@ -27,7 +27,7 @@ fn main() {
     let genome_size = 1;
     let population_size = 50;
 
-    evolve::<SvgElementGenome<CircleBase>>(raster_image_path, n_generations, genome_size, population_size);
+    evolve::<SvgElementGenome<StrokeBase>>(raster_image_path, n_generations, genome_size, population_size);
 }
 
 fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u64, genome_size: u32, population_size: u64) {

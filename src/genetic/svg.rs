@@ -109,6 +109,67 @@ impl Clone for TriangleBase {
     }
 }
 
+static STROKES: [&str; 4] = [
+];
+
+pub struct StrokeBase {
+    stroke_idx: usize,
+    x: i32,
+    y: i32,
+    rotation: i32,
+    scale_x: f32,
+    scale_y: f32,
+    color: Rgba,
+}
+
+impl Base for StrokeBase {
+    fn new(max_x: u32, max_y: u32) -> Self {
+        let mut rng = rand::thread_rng();
+        let scale = rng.gen_range(0.5..2.0);
+        Self {
+            stroke_idx: rng.gen_range(0..STROKES.len()) as usize,
+            x: rng.gen_range(0..max_x) as i32,
+            y: rng.gen_range(0..max_y) as i32,
+            rotation: rng.gen_range(0..360) as i32,
+            scale_x: scale,
+            scale_y: scale,
+            color: Rgba::new_rand(),
+        }
+    }
+
+    fn express(&self) -> String {
+        let stroke = format!("<use href=\"#stroke-{}\"/>", self.stroke_idx);
+        let transformations = format!("translate({} {}) rotate({}) scale({:.5} {:.5})", self.x, self.y, self.rotation, self.scale_x, self.scale_y);
+        return format!("<g fill-opacity=\"{:.3}\" fill=\"{}\" transform=\"{}\">{}</g>", (self.color.a as f64)/255.0, self.color.as_hex(), transformations, stroke);
+    }
+
+    fn mutate(&mut self) {
+        let m = 5;
+        let mut rng = rand::thread_rng();
+        //self.stroke_idx = (self.stroke_idx + rng.gen_range(0..1)) % 3;
+        self.x = self.x + rng.gen_range(-m..m);
+        self.y = self.y + rng.gen_range(-m..m);
+        self.rotation = (self.rotation + rng.gen_range(-m..m)) % 360;
+        self.scale_x = self.scale_x + rng.gen_range(-0.3..0.3);
+        self.scale_y = self.scale_y + rng.gen_range(-0.3..0.3);
+        self.color.mutate(rng.gen_range(0.0..20.0));
+    }
+}
+
+impl Clone for StrokeBase {
+    fn clone(&self) -> Self {
+        Self {
+            stroke_idx: self.stroke_idx,
+            x: self.x,
+            y: self.y,
+            rotation: self.rotation,
+            scale_x: self.scale_x,
+            scale_y: self.scale_y,
+            color: self.color.clone(),
+        }
+    }
+}
+
 pub struct SvgElementGenome<T: Base> {
     sequence: Vec<T>,
     width: u32,
