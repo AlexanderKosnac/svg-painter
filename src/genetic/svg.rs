@@ -5,6 +5,35 @@ use crate::genetic::color::Rgba;
 
 use crate::genetic::{Base, Genome};
 
+pub struct RgbBase {
+    color: Rgba,
+}
+
+impl Base for RgbBase {
+    fn new(max_x: u32, max_y: u32) -> Self {
+        Self {
+            color: Rgba::new_rand(),
+        }
+    }
+
+    fn express(&self) -> String {
+        return self.color.as_hex();
+    }
+
+    fn mutate(&mut self) {
+        let mut rng = rand::thread_rng();
+        self.color.mutate(rng.gen_range(0.0..20.0));
+    }
+}
+
+impl Clone for RgbBase {
+    fn clone(&self) -> Self {
+        Self {
+            color: self.color.clone(),
+        }
+    }
+}
+
 pub struct CircleBase {
     x: i32,
     y: i32,
@@ -172,6 +201,7 @@ impl Clone for StrokeBase {
 
 pub struct SvgElementGenome<T: Base> {
     sequence: Vec<T>,
+    bg_base: RgbBase,
     width: u32,
     height: u32,
 }
@@ -180,6 +210,7 @@ impl<T: Base> Genome for SvgElementGenome<T> {
     fn new(genome_size: u32, width: u32, height: u32) -> Self {
         Self {
             sequence: (0..genome_size).map(|_| T::new(width, height)).collect(),
+            bg_base: RgbBase::new(width, height),
             width: width,
             height: height,
         }
@@ -188,12 +219,13 @@ impl<T: Base> Genome for SvgElementGenome<T> {
     fn express(&self) -> String {
         let expressed: Vec<String> = self.sequence.iter().map(|b| b.express()).collect();
         let expressed_string: String = expressed.join("\n");
-        return format!("<svg width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">\n<rect width=\"100%\" height=\"100%\" fill=\"white\"/>\n{expressed_string}\n</svg>", self.width, self.height);
+        return format!("<svg width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{}\n</def>\n<rect width=\"100%\" height=\"100%\" fill=\"{}\"/>\n{expressed_string}\n</svg>", self.width, self.height, STROKES.join("\n"), self.bg_base.express());
     }
 
     fn mutate(&mut self) {
         let mut rng = rand::thread_rng();
         let idx = rng.gen_range(0..self.sequence.len()) as usize;
+        self.bg_base.mutate();
         let mut candidate = &mut self.sequence[idx];
         candidate.mutate();
     }
@@ -211,6 +243,7 @@ impl<T: Base + Clone> Clone for SvgElementGenome<T> {
     fn clone(&self) -> Self {
         Self {
             sequence: self.sequence.clone(),
+            bg_base: self.bg_base.clone(),
             width: self.width,
             height: self.height,
         }
