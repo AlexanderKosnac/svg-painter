@@ -10,7 +10,7 @@ pub struct RgbBase {
 }
 
 impl Base for RgbBase {
-    fn new(max_x: u32, max_y: u32) -> Self {
+    fn new(_max_x: u32, _max_y: u32) -> Self {
         Self {
             color: Rgba::new_rand(),
         }
@@ -157,7 +157,7 @@ pub struct StrokeBase {
 impl Base for StrokeBase {
     fn new(max_x: u32, max_y: u32) -> Self {
         let mut rng = rand::thread_rng();
-        let scale = rng.gen_range(0.5..2.0);
+        let scale = rng.gen_range(1.0..10.0);
         Self {
             stroke_idx: rng.gen_range(0..STROKES.len()) as usize,
             x: rng.gen_range(0..max_x) as i32,
@@ -235,7 +235,7 @@ impl<T: Base> Genome for SvgElementGenome<T> {
         let idx = rng.gen_range(0..self.sequence.len()) as usize;
         for c in candidates {
             if c == range_max {
-                let mut candidate = &mut self.sequence[idx];
+                let candidate = &mut self.sequence[idx];
                 candidate.mutate();
             } else {
                 self.bg_base.mutate();

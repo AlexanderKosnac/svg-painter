@@ -39,15 +39,13 @@ fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u
     let target = read_image(raster_image_path);
     let dim = (target.width(), target.height());
 
-    let min_fitness: u64 = dim.0 as u64 * dim.1 as u64 * 510; // 510 = sqrt((255-0)^2 + (255-0)^2 + (255-0)^2 + (255-0)^2)
-
     let mut population: Vec<(T, f64)> = (0..population_size).map(|_| (T::new(genome_size, dim.0, dim.1), 0.0)).collect();
 
     let mut history = vec![0.0; 30];
     let mut generation: u64 = 0;
     loop {
         generation += 1;
-        println!("Generation {}; {} individuals; avg. f.: {:.2}", generation, population.len(), history[history.len()-1]);
+        println!("Generation {}; {} individuals; avg. f.: {:.2}; fit.: {:+.3}", generation, population.len(), history[history.len()-1], history[history.len()-2]-history[history.len()-1]);
 
         population.par_iter_mut().for_each(|individual| {
             let mut candidate = tiny_skia::Pixmap::new(dim.0, dim.1).unwrap();
@@ -62,7 +60,6 @@ fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u
 
         if generation % 10 == 0 {
             for individual in population.iter().take(1) {
-                println!("Individual: fitness {:.2}/{min_fitness}; Genome Size: {}", individual.1, individual.0.len());
                 let base = format!("{}/expr", dir);
                 let expression = individual.0.express();
 
@@ -76,7 +73,7 @@ fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u
         }
 
         let last_idx = history.len();
-        let fitness_converges = (0..30).all(|i| (history[last_idx-i-2] - avg_fitness).abs() < 5.0);
+        let fitness_converges = (0..30).all(|i| (history[last_idx-i-2] - avg_fitness).abs() < 1.0);
 
         if fitness_converges {
             println!("Convergence at {:.2}", avg_fitness);
