@@ -55,7 +55,6 @@ fn evolve<T: Genome + Clone + Send>(raster_image_path: &String, n_generations: u
 
         population.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
         let fittest = &population[0..5];
-        let avg_fitness = fittest.iter().map(|it| it.1).sum::<f64>()/fittest.len() as f64;
         history.push(avg_fitness);
 
         if generation % 10 == 0 {

@@ -228,17 +228,16 @@ impl<T: Base> Genome for SvgElementGenome<T> {
     fn mutate(&mut self) {
         let mut rng = rand::thread_rng();
 
-        let range_max = self.sequence.len() + 1;
-        let no_candidates = (range_max as f64 * 0.1) as u64;
-        let candidates: Vec<usize> = (0..no_candidates).map(|_| rng.gen_range(0..range_max)).collect();
+        let range_max = self.sequence.len();
+        let bases_to_mutate = cmp::max(1, (range_max as f64 * 0.05) as u64);
+        let candidates: Vec<usize> = (0..bases_to_mutate).map(|_| rng.gen_range(0..=range_max)).collect();
 
-        let idx = rng.gen_range(0..self.sequence.len()) as usize;
         for c in candidates {
             if c == range_max {
-                let candidate = &mut self.sequence[idx];
-                candidate.mutate();
-            } else {
                 self.bg_base.mutate();
+            } else {
+                let candidate = &mut self.sequence[c];
+                candidate.mutate();
             }
         }
     }
