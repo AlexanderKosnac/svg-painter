@@ -1,14 +1,15 @@
-use std::fs::File;
-
 use tiny_skia;
-
-use std::io::Write;
 
 use rayon::prelude::*;
 
-use crate::BUILD;
+use std::fs::File;
+use std::io::Write;
+
+use crate::Controller;
 
 use crate::util;
+
+use crate::BUILD;
 
 pub mod color;
 pub mod svg;
@@ -27,55 +28,37 @@ pub trait Genome {
     fn len(&self) -> usize;
 }
 
-pub trait Environment {
-    fn new(target_image_path: &String, population_size: u64, genome_size: u32) -> Self;
-
-    fn evolve(&mut self);
-
-    fn hook_new_generation(&mut self);
-    fn evaluate_population(&mut self);
-    fn sort_population_by_fitness(&mut self);
-    fn hook_after_evaluation(&self);
-    fn stop_condition(&self) -> bool;
-    fn repopulate(&mut self);
+pub struct Experiment<T: Genome + Clone + Send> {
+    controller: Controller,
+    pub target: tiny_skia::Pixmap,
+    pub population: Vec<(T, f64)>,
 }
 
-pub struct BasicEnvironment<T: Genome> {
-    target: tiny_skia::Pixmap,
-    population: Vec<(T, f64)>,
-    generation: u64,
-}
-
-impl<T: Genome + Clone + Send> Environment for BasicEnvironment<T> {
-    fn new(target_image_path: &String, population_size: u64, genome_size: u32) -> Self {
+impl<T: Genome + Clone + Send> Experiment<T> {
+    pub fn new(target_image_path: &String, population_size: u64, genome_size: u32) -> Self {
         let target = util::read_image(target_image_path);
         let dim = (target.width(), target.height());
         Self {
+            controller: Controller::new(),
             target: target,
             population: (0..population_size).map(|_| (T::new(genome_size, dim.0, dim.1), 0.0)).collect(),
-            generation: 0,
         }
     }
 
-    fn evolve(&mut self) {
+    pub fn evolve(&mut self) {
         loop {
-            self.hook_new_generation();
+            self.controller.on_new_generation();
 
             self.evaluate_population();
             self.sort_population_by_fitness();
-            self.hook_after_evaluation();
+            self.after_evaluation();
 
-            if self.stop_condition() {
+            if self.controller.stop_condition() {
                 break;
             }
 
             self.repopulate();
         }
-    }
-
-    fn hook_new_generation(&mut self) {
-        self.generation += 1;
-        println!("Generation {}", self.generation);
     }
 
     fn evaluate_population(&mut self) {
@@ -86,11 +69,7 @@ impl<T: Genome + Clone + Send> Environment for BasicEnvironment<T> {
         });
     }
 
-    fn sort_population_by_fitness(&mut self) {
-        self.population.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
-    }
-
-    fn hook_after_evaluation(&self) {
+    fn after_evaluation(&self) {
         for individual in self.population.iter().take(1) {
             let base = format!("{BUILD}/expr");
             let expression = individual.0.express();
@@ -104,8 +83,8 @@ impl<T: Genome + Clone + Send> Environment for BasicEnvironment<T> {
         }
     }
 
-    fn stop_condition(&self) -> bool {
-        self.generation == 60
+    fn sort_population_by_fitness(&mut self) {
+        self.population.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
     }
 
     fn repopulate(&mut self) {

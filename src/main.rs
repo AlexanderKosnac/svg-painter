@@ -1,5 +1,7 @@
 use std::env;
 use std::fs;
+use std::fs::File;
+use std::io::Write;
 
 pub mod genetic;
 use genetic::*;
@@ -20,6 +22,27 @@ fn main() {
     fs::create_dir_all(String::from(BUILD)).expect("Unable to create build directory");
     fs::copy(raster_image_path, format!("{BUILD}/trgt.png")).expect("Could not copy target file");
 
-    let mut env = BasicEnvironment::<SvgElementGenome<StrokeBase>>::new(raster_image_path, population_size, genome_size);
+    let mut env = Experiment::<SvgElementGenome<StrokeBase>>::new(raster_image_path, population_size, genome_size);
     env.evolve();
+}
+
+struct Controller {
+    generation: u64,
+}
+
+impl Controller {
+    fn new() -> Self {
+        Self {
+            generation: 0,
+        }
+    }
+
+    fn on_new_generation(&mut self) {
+        self.generation += 1;
+        println!("Generation {}", self.generation);
+    }
+
+    fn stop_condition(&self) -> bool {
+        self.generation == 60
+    }
 }
