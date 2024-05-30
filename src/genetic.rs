@@ -5,8 +5,6 @@ use rayon::prelude::*;
 use std::fs::File;
 use std::io::Write;
 
-use crate::Controller;
-
 use crate::util;
 
 use crate::BUILD;
@@ -29,9 +27,10 @@ pub trait Genome {
 }
 
 pub struct Experiment<T: Genome + Clone + Send> {
-    controller: Controller,
-    pub target: tiny_skia::Pixmap,
-    pub population: Vec<(T, f64)>,
+    target: tiny_skia::Pixmap,
+    population: Vec<(T, f64)>,
+    generation: u64,
+    fitness_history: Vec<f64>,
 }
 
 impl<T: Genome + Clone + Send> Experiment<T> {
@@ -39,26 +38,36 @@ impl<T: Genome + Clone + Send> Experiment<T> {
         let target = util::read_image(target_image_path);
         let dim = (target.width(), target.height());
         Self {
-            controller: Controller::new(),
             target: target,
             population: (0..population_size).map(|_| (T::new(genome_size, dim.0, dim.1), 0.0)).collect(),
+            generation: 0,
+            fitness_history: Vec::new(),
         }
     }
 
     pub fn evolve(&mut self) {
         loop {
-            self.controller.on_new_generation();
+            self.on_new_generation();
 
             self.evaluate_population();
             self.sort_population_by_fitness();
             self.after_evaluation();
 
-            if self.controller.stop_condition() {
+            if self.stop_condition() {
                 break;
             }
 
             self.repopulate();
         }
+    }
+
+    fn on_new_generation(&mut self) {
+        self.generation += 1;
+        let last_avg_fitness = match self.fitness_history.last() {
+            None => String::from("N/A"),
+            Some(i) => format!("{:8.3}", i),
+        };
+        println!("Generation {:5}; avg. fit.: {}", self.generation, last_avg_fitness);
     }
 
     fn evaluate_population(&mut self) {
@@ -69,7 +78,7 @@ impl<T: Genome + Clone + Send> Experiment<T> {
         });
     }
 
-    fn after_evaluation(&self) {
+    fn after_evaluation(&mut self) {
         for individual in self.population.iter().take(1) {
             let base = format!("{BUILD}/expr");
             let expression = individual.0.express();
@@ -81,10 +90,24 @@ impl<T: Genome + Clone + Send> Experiment<T> {
             util::render_svg_into_pixmap(&expression, &mut candidate);
             candidate.save_png(format!("{base}.png")).expect("Unable to create PNG file");
         }
+
+        let fittest = &self.population[0..5];
+        let avg_fitness = fittest.iter().map(|it| it.1).sum::<f64>()/fittest.len() as f64;
+        self.fitness_history.push(avg_fitness);
     }
 
     fn sort_population_by_fitness(&mut self) {
         self.population.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+    }
+
+    fn stop_condition(&self) -> bool {
+        let last_idx = self.fitness_history.len();
+        let latest_fitness = self.fitness_history[last_idx-1];
+        let window_size = 30;
+        if last_idx < window_size {
+            return false
+        }
+        return (0..window_size).all(|i| (self.fitness_history[last_idx-i-2] - latest_fitness).abs() < 1.0);
     }
 
     fn repopulate(&mut self) {

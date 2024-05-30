@@ -25,24 +25,3 @@ fn main() {
     let mut env = Experiment::<SvgElementGenome<StrokeBase>>::new(raster_image_path, population_size, genome_size);
     env.evolve();
 }
-
-struct Controller {
-    generation: u64,
-}
-
-impl Controller {
-    fn new() -> Self {
-        Self {
-            generation: 0,
-        }
-    }
-
-    fn on_new_generation(&mut self) {
-        self.generation += 1;
-        println!("Generation {}", self.generation);
-    }
-
-    fn stop_condition(&self) -> bool {
-        self.generation == 60
-    }
-}
