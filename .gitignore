@@ -1,2 +1,11 @@
+# Build directories
 /target
 /build
+
+# Images
+*.png
+*.jpg
+*.svg
+
+*.html
+*.py
