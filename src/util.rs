@@ -6,6 +6,8 @@ use fontdb;
 use tiny_skia;
 use tiny_skia_path;
 
+pub mod image;
+
 pub fn bounded_add(a: u8, b: i64) -> u8 {
     if b > 0 {
         a.checked_add(b as u8).unwrap_or(u8::MAX)
