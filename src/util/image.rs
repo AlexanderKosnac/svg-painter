@@ -46,16 +46,16 @@ pub fn sobel(input: &tiny_skia::Pixmap) -> tiny_skia::Pixmap {
     return canvas;
 }
 
-pub fn gaussian_blur(input: tiny_skia::Pixmap) -> tiny_skia::Pixmap {
+pub fn gaussian_blur(input: &tiny_skia::Pixmap) -> tiny_skia::Pixmap {
     gaussian_blur_from_gaussian_function(input, 2.0, 3)
 }
 
-pub fn gaussian_blur_from_gaussian_function(input: tiny_skia::Pixmap, sigma: f64, kernel_radius: u32) -> tiny_skia::Pixmap {
+pub fn gaussian_blur_from_gaussian_function(input: &tiny_skia::Pixmap, sigma: f64, kernel_radius: u32) -> tiny_skia::Pixmap {
     let kernel = get_gaussian_blur_kernel(sigma, kernel_radius);
     gaussian_blur_with_kernel(input, &kernel)
 }
 
-pub fn gaussian_blur_with_kernel(input: tiny_skia::Pixmap, kernel: &Vec<Vec<f64>>) -> tiny_skia::Pixmap {
+pub fn gaussian_blur_with_kernel(input: &tiny_skia::Pixmap, kernel: &Vec<Vec<f64>>) -> tiny_skia::Pixmap {
     let def = tiny_skia::PremultipliedColorU8::from_rgba(0, 0, 0, 255).unwrap();
 
     let (mut canvas, width, height) = get_canvas(&input);
