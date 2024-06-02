@@ -1,17 +1,7 @@
 use tiny_skia;
 
-use crate::util;
-
-// See: https://en.wikipedia.org/wiki/Gaussian_blur#Sample_Gaussian_matrix
-static GAUSSIAN_BLUR_KERNEL: [[f64; 7]; 7] = [
-    [0.00000067, 0.00002292, 0.00019117, 0.00038771, 0.00019117, 0.00002292, 0.00000067],
-    [0.00002292, 0.00078633, 0.00655965, 0.01330373, 0.00655965, 0.00078633, 0.00002292],
-    [0.00019117, 0.00655965, 0.05472157, 0.11098164, 0.05472157, 0.00655965, 0.00019117],
-    [0.00038771, 0.01330373, 0.11098164, 0.22508352, 0.11098164, 0.01330373, 0.00038771],
-    [0.00019117, 0.00655965, 0.05472157, 0.11098164, 0.05472157, 0.00655965, 0.00019117],
-    [0.00002292, 0.00078633, 0.00655965, 0.01330373, 0.00655965, 0.00078633, 0.00002292],
-    [0.00000067, 0.00002292, 0.00019117, 0.00038771, 0.00019117, 0.00002292, 0.00000067],
-];
+static PI: f64 = 3.14159265359;
+static EULER_E: f64 = 2.71828182846;
 
 pub fn sobel(input: tiny_skia::Pixmap) -> tiny_skia::Pixmap {
     let def = tiny_skia::PremultipliedColorU8::from_rgba(0, 0, 0, 255).unwrap();
@@ -53,12 +43,21 @@ pub fn sobel(input: tiny_skia::Pixmap) -> tiny_skia::Pixmap {
 }
 
 pub fn gaussian_blur(input: tiny_skia::Pixmap) -> tiny_skia::Pixmap {
+    gaussian_blur_from_gaussian_function(input, 2.0, 3)
+}
+
+pub fn gaussian_blur_from_gaussian_function(input: tiny_skia::Pixmap, sigma: f64, kernel_radius: u32) -> tiny_skia::Pixmap {
+    let kernel = get_gaussian_blur_kernel(sigma, kernel_radius);
+    gaussian_blur_with_kernel(input, &kernel)
+}
+
+pub fn gaussian_blur_with_kernel(input: tiny_skia::Pixmap, kernel: &Vec<Vec<f64>>) -> tiny_skia::Pixmap {
     let def = tiny_skia::PremultipliedColorU8::from_rgba(0, 0, 0, 255).unwrap();
 
     let width = input.width() as i32;
     let height = input.height() as i32;
-    let kernel_width = GAUSSIAN_BLUR_KERNEL[0].len() as i32;
-    let kernel_height = GAUSSIAN_BLUR_KERNEL.len() as i32;
+    let kernel_width = kernel[0].len() as i32;
+    let kernel_height = kernel.len() as i32;
     let kernel_width_offset = (kernel_width as f64/2.0).floor() as i32;
     let kernel_height_offset = (kernel_height as f64/2.0).floor() as i32;
 
@@ -78,10 +77,10 @@ pub fn gaussian_blur(input: tiny_skia::Pixmap) -> tiny_skia::Pixmap {
                 for l in 0..kernel_height {
                     let p = get_pixel(i+k-kernel_width_offset, j+l-kernel_height_offset);
                     let idcs = (k as usize, l as usize);
-                    c[0] += GAUSSIAN_BLUR_KERNEL[idcs.0][idcs.1] * p[0];
-                    c[1] += GAUSSIAN_BLUR_KERNEL[idcs.0][idcs.1] * p[1];
-                    c[2] += GAUSSIAN_BLUR_KERNEL[idcs.0][idcs.1] * p[2];
-                    c[3] += GAUSSIAN_BLUR_KERNEL[idcs.0][idcs.1] * p[3];
+                    c[0] += kernel[idcs.0][idcs.1] * p[0];
+                    c[1] += kernel[idcs.0][idcs.1] * p[1];
+                    c[2] += kernel[idcs.0][idcs.1] * p[2];
+                    c[3] += kernel[idcs.0][idcs.1] * p[3];
                 }
             }
 
@@ -93,3 +92,30 @@ pub fn gaussian_blur(input: tiny_skia::Pixmap) -> tiny_skia::Pixmap {
     return new;
 }
 
+fn get_gaussian_blur_kernel(sigma: f64, matrix_radius: u32) -> Vec<Vec<f64>> {
+    let sigma2 = sigma*sigma;
+    let factor = 1.0/(2.0*PI*sigma2);
+    let g = |x: i32, y: i32| -> f64 {
+        factor * EULER_E.powf(-((x*x + y*y) as f64/(2.0*sigma2)))
+    };
+    let matrix_diameter = 1 + 2*matrix_radius as usize;
+    let mut kernel = vec![vec![0.0; matrix_diameter]; matrix_diameter];
+
+    let r = matrix_radius as i32;
+    let mut sum = 0.0;
+    for i in -r..=r {
+        for j in -r..=r {
+            let gauss = g(i, j);
+            kernel[(i+r) as usize][(j+r) as usize] = gauss;
+            sum += gauss;
+        }
+    }
+
+    for i in -r..=r {
+        for j in -r..=r {
+            kernel[(i+r) as usize][(j+r) as usize] /= sum;
+        }
+    }
+
+    return kernel;
+}
