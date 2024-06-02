@@ -10,10 +10,13 @@ pub struct RgbBase {
 }
 
 impl Base for RgbBase {
-    fn new(_max_x: u32, _max_y: u32) -> Self {
+    fn new() -> Self {
         Self {
             color: Rgba::new_rand(),
         }
+    }
+
+    fn set_xy(&mut self, x: i32, y: i32) {
     }
 
     fn express(&self) -> String {
@@ -39,20 +42,22 @@ pub struct CircleBase {
     y: i32,
     r: i32,
     color: Rgba,
-    max_r: u32,
 }
 
 impl Base for CircleBase {
-    fn new(max_x: u32, max_y: u32) -> Self {
+    fn new() -> Self {
         let mut rng = rand::thread_rng();
-        let max_r = (max_x+max_y)/2/16;
         Self {
-            x: rng.gen_range(0..max_x) as i32,
-            y: rng.gen_range(0..max_y) as i32,
-            r: rng.gen_range(1..max_r) as i32,
+            x: 0,
+            y: 0,
+            r: rng.gen_range(1..100) as i32,
             color: Rgba::new_rand(),
-            max_r: max_r,
         }
+    }
+
+    fn set_xy(&mut self, x: i32, y: i32) {
+        self.x = x;
+        self.y = y;
     }
 
     fn express(&self) -> String {
@@ -92,17 +97,20 @@ pub struct TriangleBase {
 }
 
 impl Base for TriangleBase {
-    fn new(max_x: u32, max_y: u32) -> Self {
+    fn new() -> Self {
         let mut rng = rand::thread_rng();
         Self {
-            x1: rng.gen_range(0..max_x) as i32,
-            y1: rng.gen_range(0..max_y) as i32,
-            x2: rng.gen_range(0..max_x) as i32,
-            y2: rng.gen_range(0..max_y) as i32,
-            x3: rng.gen_range(0..max_x) as i32,
-            y3: rng.gen_range(0..max_y) as i32,
+            x1: rng.gen_range(0..100) as i32,
+            y1: rng.gen_range(0..100) as i32,
+            x2: rng.gen_range(0..100) as i32,
+            y2: rng.gen_range(0..100) as i32,
+            x3: rng.gen_range(0..100) as i32,
+            y3: rng.gen_range(0..100) as i32,
             color: Rgba::new_rand(),
         }
+    }
+
+    fn set_xy(&mut self, x: i32, y: i32) {
     }
 
     fn express(&self) -> String {
@@ -167,6 +175,11 @@ impl Base for StrokeBase {
             scale_y: scale,
             color: Rgba::new_rand(),
         }
+    }
+
+    fn set_xy(&mut self, x: i32, y: i32) {
+        self.x = x;
+        self.y = y;
     }
 
     fn express(&self) -> String {

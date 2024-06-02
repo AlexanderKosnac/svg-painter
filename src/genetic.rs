@@ -13,7 +13,8 @@ pub mod color;
 pub mod svg;
 
 pub trait Base {
-    fn new(max_x: u32, max_y: u32) -> Self;
+    fn new() -> Self;
+    fn set_xy(&mut self, x: i32, y: i32);
     fn express(&self) -> String;
     fn mutate(&mut self);
 }
