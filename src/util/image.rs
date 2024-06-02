@@ -3,14 +3,18 @@ use tiny_skia;
 static PI: f64 = 3.14159265359;
 static EULER_E: f64 = 2.71828182846;
 
-pub fn sobel(input: tiny_skia::Pixmap) -> tiny_skia::Pixmap {
-    let def = tiny_skia::PremultipliedColorU8::from_rgba(0, 0, 0, 255).unwrap();
-
+fn get_canvas(input: &tiny_skia::Pixmap) -> (tiny_skia::Pixmap, i32, i32){
     let width = input.width() as i32;
     let height = input.height() as i32;
+    let canvas = tiny_skia::Pixmap::new(width as u32, height as u32).unwrap();
+    (canvas, width, height)
+}
 
-    let mut new = tiny_skia::Pixmap::new(width as u32, height as u32).unwrap();
-    let mut data = new.pixels_mut();
+pub fn sobel(input: &tiny_skia::Pixmap) -> tiny_skia::Pixmap {
+    let def = tiny_skia::PremultipliedColorU8::from_rgba(0, 0, 0, 255).unwrap();
+
+    let (mut canvas, width, height) = get_canvas(&input);
+    let data = canvas.pixels_mut();
 
     let get_pixel = |x: i32, y: i32| -> i32 {
         let q = if x < 0 || y < 0 { def } else { input.pixel(x as u32, y as u32).unwrap_or(def) };
@@ -39,7 +43,7 @@ pub fn sobel(input: tiny_skia::Pixmap) -> tiny_skia::Pixmap {
         }
     }
 
-    return new;
+    return canvas;
 }
 
 pub fn gaussian_blur(input: tiny_skia::Pixmap) -> tiny_skia::Pixmap {
@@ -54,15 +58,13 @@ pub fn gaussian_blur_from_gaussian_function(input: tiny_skia::Pixmap, sigma: f64
 pub fn gaussian_blur_with_kernel(input: tiny_skia::Pixmap, kernel: &Vec<Vec<f64>>) -> tiny_skia::Pixmap {
     let def = tiny_skia::PremultipliedColorU8::from_rgba(0, 0, 0, 255).unwrap();
 
-    let width = input.width() as i32;
-    let height = input.height() as i32;
+    let (mut canvas, width, height) = get_canvas(&input);
+    let data = canvas.pixels_mut();
+
     let kernel_width = kernel[0].len() as i32;
     let kernel_height = kernel.len() as i32;
     let kernel_width_offset = (kernel_width as f64/2.0).floor() as i32;
     let kernel_height_offset = (kernel_height as f64/2.0).floor() as i32;
-
-    let mut new = tiny_skia::Pixmap::new(width as u32, height as u32).unwrap();
-    let mut data = new.pixels_mut();
 
     let get_pixel = |x: i32, y: i32| -> [f64; 4] {
         let q = if x < 0 || y < 0 { def } else { input.pixel(x as u32, y as u32).unwrap_or(def) };
@@ -89,7 +91,7 @@ pub fn gaussian_blur_with_kernel(input: tiny_skia::Pixmap, kernel: &Vec<Vec<f64>
         }
     }
 
-    return new;
+    return canvas;
 }
 
 fn get_gaussian_blur_kernel(sigma: f64, matrix_radius: u32) -> Vec<Vec<f64>> {
