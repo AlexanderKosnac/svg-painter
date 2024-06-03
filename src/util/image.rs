@@ -1,9 +1,20 @@
+use rand_distr;
+use rand_distr::Distribution;
+
 use tiny_skia;
 
 use crate::util;
 
 static PI: f64 = 3.14159265359;
 static EULER_E: f64 = 2.71828182846;
+
+fn rgba_to_grayscale(c: &tiny_skia::PremultipliedColorU8) -> i32 {
+    rgb_to_grayscale(&c.demultiply())
+}
+
+fn rgb_to_grayscale(c: &tiny_skia::ColorU8) -> i32 {
+    (c.red() as f64 * 0.299 + c.green() as f64 * 0.587 + c.blue() as f64 * 0.114) as i32
+}
 
 fn get_canvas(input: &tiny_skia::Pixmap) -> (tiny_skia::Pixmap, i32, i32){
     let width = input.width() as i32;
@@ -122,4 +133,35 @@ fn get_gaussian_blur_kernel(sigma: f64, matrix_radius: u32) -> Vec<Vec<f64>> {
     }
 
     return kernel;
+}
+
+pub struct GraylevelMask {
+    rng: rand::rngs::ThreadRng,
+    dist: rand_distr::WeightedIndex<f64>,
+    width: u32,
+    height: u32,
+}
+
+impl GraylevelMask {
+
+    pub fn from(src: &tiny_skia::Pixmap) -> Self {
+        let gray = src.pixels().iter().map(|p| rgba_to_grayscale(p) as f64).collect::<Vec<f64>>();
+        let sum = gray.iter().sum::<f64>();
+        let weights = gray.iter().map(|v| v/sum).collect::<Vec<f64>>();
+        Self {
+            rng: rand::thread_rng(),
+            dist: rand_distr::WeightedIndex::new(&weights).unwrap(),
+            width: src.width(),
+            height: src.height(),
+        }
+    }
+
+    pub fn sample_random_i(&mut self) -> u32 {
+        self.dist.sample(&mut self.rng) as u32
+    }
+
+    pub fn sample_random_xy(&mut self) -> (u32, u32) {
+        let i = self.sample_random_i();
+        ((i as f64 / self.width as f64).floor() as u32, i % self.width)
+    }
 }
