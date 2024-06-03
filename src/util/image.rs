@@ -1,5 +1,7 @@
 use tiny_skia;
 
+use crate::util;
+
 static PI: f64 = 3.14159265359;
 static EULER_E: f64 = 2.71828182846;
 
@@ -17,10 +19,10 @@ pub fn sobel(input: &tiny_skia::Pixmap) -> tiny_skia::Pixmap {
     let data = canvas.pixels_mut();
 
     let get_pixel = |x: i32, y: i32| -> i32 {
-        let q = if x < 0 || y < 0 { def } else { input.pixel(x as u32, y as u32).unwrap_or(def) };
-        let p = q.demultiply();
-        let grey = p.red() as f64 * 0.299 + p.green() as f64 * 0.587 + p.blue() as f64 * 0.114;
-        grey as i32
+        let x_clamped = util::clamp(x, 0, width-1) as u32;
+        let y_clamped = util::clamp(y, 0, height-1) as u32;
+        let p = input.pixel(x_clamped, y_clamped).unwrap_or(def);
+        rgb_to_grayscale(&p.demultiply())
     };
 
     for i in 0..width {

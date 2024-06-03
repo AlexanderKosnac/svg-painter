@@ -16,19 +16,18 @@ pub fn bounded_add(a: u8, b: i64) -> u8 {
     }
 }
 
-pub fn clamp<T: Ord>(value: T, min: T, max: T) -> T {
+pub fn clamp<T: PartialOrd>(value: T, min: T, max: T) -> T {
     if value < min {
-        return min;
+        min
+    } else if value > max {
+        max
+    } else {
+        value
     }
-    if value > max {
-        return max;
-    }
-    return value;
 }
 
 pub fn read_image(path: &String) -> tiny_skia::Pixmap {
-    let path_obj = Path::new(path);
-    return tiny_skia::Pixmap::load_png(&path_obj).expect("Failed to open image");
+    return tiny_skia::Pixmap::load_png(&Path::new(path)).expect("Failed to open image");
 }
 
 pub fn render_svg_into_pixmap(svg_data: &String, pixmap: &mut tiny_skia::Pixmap) {
