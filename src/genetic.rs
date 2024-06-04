@@ -9,38 +9,29 @@ use crate::util;
 
 use crate::BUILD;
 
+use std::cmp;
+use rand::Rng;
+
+use crate::genetic::color::Rgba;
+use crate::BaseSource;
+
 pub mod color;
-pub mod svg;
 
-pub trait Base {
-    fn new() -> Self;
-    fn set_xy(&mut self, x: i32, y: i32);
-    fn express(&self) -> String;
-    fn mutate(&mut self);
-}
-
-pub trait Genome {
-    fn new(genome_size: u32, width: u32, height: u32) -> Self;
-    fn express(&self) -> String;
-    fn mutate(&mut self);
-    fn insertion(&mut self);
-    fn len(&self) -> usize;
-}
-
-pub struct Experiment<T: Genome + Clone + Send> {
+pub struct Experiment {
     target: tiny_skia::Pixmap,
-    population: Vec<(T, f64)>,
+    population: Vec<(SvgElementGenome, f64)>,
     generation: u64,
     fitness_history: Vec<f64>,
 }
 
-impl<T: Genome + Clone + Send> Experiment<T> {
-    pub fn new(target_image_path: &String, population_size: u64, genome_size: u32) -> Self {
+impl Experiment {
+
+    pub fn new(target_image_path: &String, population_size: u64) -> Self {
         let target = util::read_image(target_image_path);
         let dim = (target.width(), target.height());
         Self {
             target: target,
-            population: (0..population_size).map(|_| (T::new(genome_size, dim.0, dim.1), 0.0)).collect(),
+            population: (0..population_size).map(|_| (SvgElementGenome::new(dim.0, dim.1), 0.0)).collect(),
             generation: 0,
             fitness_history: Vec::new(),
         }
@@ -62,11 +53,24 @@ impl<T: Genome + Clone + Send> Experiment<T> {
         }
     }
 
+    pub fn fixate_all_individuals(&mut self) {
+        for individual in &mut self.population {
+            individual.0.fixate();
+        }
+    }
+
+    pub fn insertion_on_all_individuals(&mut self, source: &mut BaseSource) {
+        for individual in &mut self.population {
+            individual.0.insertion(source);
+            individual.1 = 0.0;
+        }
+    }
+
     fn on_new_generation(&mut self) {
         self.generation += 1;
         let last_avg_fitness = match self.fitness_history.last() {
             None => String::from("N/A"),
-            Some(i) => format!("{:8.3}", i),
+            Some(i) => format!("{:9.3}", i),
         };
         println!("Generation {:5}; avg. fit.: {}", self.generation, last_avg_fitness);
     }
@@ -106,7 +110,7 @@ impl<T: Genome + Clone + Send> Experiment<T> {
         let latest_fitness = self.fitness_history[last_idx-1];
         let window_size = 30;
         if last_idx < window_size {
-            return false
+            return false;
         }
         return (0..window_size).all(|i| (self.fitness_history[last_idx-i-2] - latest_fitness).abs() < 1.0);
     }
@@ -127,3 +131,163 @@ impl<T: Genome + Clone + Send> Experiment<T> {
         self.population = new_population;
     }
 }
+
+pub struct RgbBase {
+    color: Rgba,
+}
+
+impl RgbBase {
+    fn new() -> Self {
+        Self {
+            color: Rgba::new_rand(),
+        }
+    }
+
+    fn express(&self) -> String {
+        return self.color.as_hex();
+    }
+
+    fn mutate(&mut self) {
+        let mut rng = rand::thread_rng();
+        self.color.mutate(rng.gen_range(0.0..20.0));
+    }
+}
+
+impl Clone for RgbBase {
+    fn clone(&self) -> Self {
+        Self {
+            color: self.color.clone(),
+        }
+    }
+}
+
+static STROKES: [&str; 3] = [
+    "<rect id=\"stroke-0\" width=\"100\" height=\"25\"/>",
+    "<rect id=\"stroke-1\" width=\"100\" height=\"50\"/>",
+    "<rect id=\"stroke-2\" width=\"100\" height=\"75\"/>",
+];
+
+pub struct StrokeBase {
+    stroke_idx: usize,
+    x: i32,
+    y: i32,
+    rotation: i32,
+    scale_x: f32,
+    scale_y: f32,
+    color: Rgba,
+}
+
+impl StrokeBase {
+    pub fn new(x: i32, y: i32, scale_x: f32, scale_y: f32) -> Self {
+        let mut rng = rand::thread_rng();
+        Self {
+            stroke_idx: rng.gen_range(0..STROKES.len()) as usize,
+            x: x,
+            y: y,
+            rotation: rng.gen_range(0..360) as i32,
+            scale_x: scale_x,
+            scale_y: scale_y,
+            color: Rgba::new_rand(),
+        }
+    }
+
+    fn express(&self) -> String {
+        let stroke = format!("<use href=\"#stroke-{}\"/>", self.stroke_idx);
+        let transformations = format!("translate({} {}) rotate({}) scale({:.5} {:.5})", self.x, self.y, self.rotation, self.scale_x, self.scale_y);
+        return format!("<g fill-opacity=\"{:.3}\" fill=\"{}\" transform=\"{}\">{}</g>", (self.color.a as f64)/255.0, self.color.as_hex(), transformations, stroke);
+    }
+
+    fn mutate(&mut self) {
+        let m = 5;
+        let mut rng = rand::thread_rng();
+        self.x = self.x + rng.gen_range(-m..m);
+        self.y = self.y + rng.gen_range(-m..m);
+        self.rotation = (self.rotation + rng.gen_range(-m..m)) % 360;
+        self.color.mutate(rng.gen_range(0.0..20.0));
+    }
+}
+
+impl Clone for StrokeBase {
+    fn clone(&self) -> Self {
+        Self {
+            stroke_idx: self.stroke_idx,
+            x: self.x,
+            y: self.y,
+            rotation: self.rotation,
+            scale_x: self.scale_x,
+            scale_y: self.scale_y,
+            color: self.color.clone(),
+        }
+    }
+}
+
+pub struct SvgElementGenome {
+    sequence: Vec<StrokeBase>,
+    sequence_fixed: Vec<StrokeBase>,
+    bg_base: RgbBase,
+    width: u32,
+    height: u32,
+}
+
+impl SvgElementGenome {
+    fn new(width: u32, height: u32) -> Self {
+        Self {
+            sequence: Vec::new(),
+            sequence_fixed: Vec::new(),
+            bg_base: RgbBase::new(),
+            width: width,
+            height: height,
+        }
+    }
+
+    fn express(&self) -> String {
+        let expressed: String = self.sequence_fixed.iter().chain(self.sequence.iter()).map(|b| b.express()).collect::<Vec<String>>().join("\n");
+        return format!(
+            "<svg width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{}\n</def>\n<rect width=\"100%\" height=\"100%\" fill=\"{}\"/>\n{expressed}\n</svg>",
+            self.width, self.height, STROKES.join("\n"), self.bg_base.express()
+        );
+    }
+
+    fn mutate(&mut self) {
+        let mut rng = rand::thread_rng();
+
+        let range_max = self.sequence.len();
+        let bases_to_mutate = cmp::max(1, (range_max as f64 * 0.05) as u64);
+        let candidates: Vec<usize> = (0..bases_to_mutate).map(|_| rng.gen_range(0..=range_max)).collect();
+
+        for c in candidates {
+            if c == range_max {
+                self.bg_base.mutate();
+            } else {
+                let candidate = &mut self.sequence[c];
+                candidate.mutate();
+            }
+        }
+    }
+
+    fn insertion(&mut self, source: &mut BaseSource) {
+        self.sequence.push(source.build_base());
+    }
+
+    fn fixate(&mut self) {
+        self.sequence.append(&mut self.sequence_fixed);
+    }
+
+    fn len(&self) -> usize {
+        return self.sequence.len();
+    }
+}
+
+impl Clone for SvgElementGenome {
+    fn clone(&self) -> Self {
+        Self {
+            sequence: self.sequence.clone(),
+            sequence_fixed: self.sequence_fixed.clone(),
+            bg_base: self.bg_base.clone(),
+            width: self.width,
+            height: self.height,
+        }
+    }
+}
+
+unsafe impl Send for SvgElementGenome {}
