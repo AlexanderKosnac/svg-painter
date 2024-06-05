@@ -5,6 +5,8 @@ use rayon::prelude::*;
 use std::fs::File;
 use std::io::Write;
 
+use rand_distr::Distribution;
+
 use crate::util;
 
 use crate::BUILD;
@@ -116,20 +118,25 @@ impl Experiment {
     }
 
     fn repopulate(&mut self) {
-        let fittest = &self.population[0..5];
-        let individuals_per_genome = self.population.len() / fittest.len();
+        let fitness = self.population.iter().map(|p| p.1).collect::<Vec<f64>>();
+        let max = fitness.iter().max_by(|a, b| a.total_cmp(b)).unwrap_or(&0.0);
 
+        let fitness_inverted = fitness.iter().map(|f| max-f).collect::<Vec<f64>>();
+        let sum = fitness_inverted.iter().sum::<f64>();
+
+        let fitness_normalized = fitness_inverted.iter().map(|f| f/sum).collect::<Vec<f64>>();
+
+        let dist = rand_distr::WeightedIndex::new(&fitness_normalized).unwrap();
+
+        let mut rng = rand::thread_rng();
         let mut new_population = Vec::new();
-        for individual in fittest {
-            new_population.push((individual.0.clone(), 0.0));
-            for _ in 0..(individuals_per_genome-1) {
-                let mut new_genome = individual.0.clone();
-                new_genome.mutate();
-                new_population.push((new_genome, 0.0));
-            }
+        for _ in 0..self.population.len() {
+            let mut new_genome = self.population[dist.sample(&mut rng)].0.clone();
+            new_genome.mutate();
+            new_population.push((new_genome, 0.0));
         }
         self.population = new_population;
-    }
+    }    
 }
 
 pub struct RgbBase {
