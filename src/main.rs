@@ -29,7 +29,7 @@ fn main() {
         println!("Stage {stage}");
         env.evolve();
         env.fixate_all_individuals();
-        env.insertion_on_all_individuals(&mut base_source);
+        env.insertion_on_all_individuals(&mut base_source, 10);
         stage += 1;
     }
 }

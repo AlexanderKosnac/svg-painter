@@ -61,9 +61,9 @@ impl Experiment {
         }
     }
 
-    pub fn insertion_on_all_individuals(&mut self, source: &mut BaseSource) {
+    pub fn insertion_on_all_individuals(&mut self, source: &mut BaseSource, n: u64) {
         for individual in &mut self.population {
-            individual.0.insertion(source);
+            individual.0.insertion(source, n);
             individual.1 = 0.0;
         }
     }
@@ -280,8 +280,6 @@ impl SvgElementGenome {
         }
     }
 
-    fn insertion(&mut self, source: &mut BaseSource) {
-        self.sequence.push(source.build_base());
     fn cross_with(&self, other: &SvgElementGenome) -> SvgElementGenome {
         let crossover_points = util::random_points_in_range(3, 0, self.sequence.len() as u64);
 
@@ -302,6 +300,11 @@ impl SvgElementGenome {
             height: self.height,
         }
     }
+
+    fn insertion(&mut self, source: &mut BaseSource, n: u64) {
+        for _ in 0..n {
+            self.sequence.push(source.build_base());
+        }
     }
 
     fn fixate(&mut self) {
