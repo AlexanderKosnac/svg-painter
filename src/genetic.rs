@@ -141,35 +141,6 @@ impl Experiment {
     }    
 }
 
-pub struct RgbBase {
-    color: Rgba,
-}
-
-impl RgbBase {
-    fn new() -> Self {
-        Self {
-            color: Rgba::new_rand(),
-        }
-    }
-
-    fn express(&self) -> String {
-        return self.color.as_hex();
-    }
-
-    fn mutate(&mut self) {
-        let mut rng = rand::thread_rng();
-        self.color.mutate(rng.gen_range(0.0..20.0));
-    }
-}
-
-impl Clone for RgbBase {
-    fn clone(&self) -> Self {
-        Self {
-            color: self.color.clone(),
-        }
-    }
-}
-
 static STROKES: [&str; 3] = [
     "<rect id=\"stroke-0\" width=\"100\" height=\"25\"/>",
     "<rect id=\"stroke-1\" width=\"100\" height=\"50\"/>",
@@ -239,7 +210,6 @@ impl Clone for StrokeBase {
 pub struct SvgElementGenome {
     sequence: Vec<StrokeBase>,
     sequence_fixed: Vec<StrokeBase>,
-    bg_base: RgbBase,
     width: u32,
     height: u32,
 }
@@ -249,7 +219,6 @@ impl SvgElementGenome {
         Self {
             sequence: Vec::new(),
             sequence_fixed: Vec::new(),
-            bg_base: RgbBase::new(),
             width: width,
             height: height,
         }
@@ -258,8 +227,8 @@ impl SvgElementGenome {
     fn express(&self) -> String {
         let expressed: String = self.sequence_fixed.iter().chain(self.sequence.iter()).map(|b| b.express()).collect::<Vec<String>>().join("\n");
         return format!(
-            "<svg width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{}\n</def>\n<rect width=\"100%\" height=\"100%\" fill=\"{}\"/>\n{expressed}\n</svg>",
-            self.width, self.height, STROKES.join("\n"), self.bg_base.express()
+            "<svg width=\"{}\" height=\"{}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{}\n</def>\n<rect width=\"100%\" height=\"100%\" fill=\"white\"/>\n{expressed}\n</svg>",
+            self.width, self.height, STROKES.join("\n")
         );
     }
 
@@ -268,15 +237,11 @@ impl SvgElementGenome {
 
         let range_max = self.sequence.len();
         let bases_to_mutate = cmp::max(1, (range_max as f64 * 0.05) as u64);
-        let candidates: Vec<usize> = (0..bases_to_mutate).map(|_| rng.gen_range(0..=range_max)).collect();
+        let candidates: Vec<usize> = (0..bases_to_mutate).map(|_| rng.gen_range(0..range_max)).collect();
 
         for c in candidates {
-            if c == range_max {
-                self.bg_base.mutate();
-            } else {
-                let candidate = &mut self.sequence[c];
-                candidate.mutate();
-            }
+            let candidate = &mut self.sequence[c];
+            candidate.mutate();
         }
     }
 
@@ -295,7 +260,6 @@ impl SvgElementGenome {
         SvgElementGenome {
             sequence: new_sequence,
             sequence_fixed: self.sequence_fixed.clone(),
-            bg_base: self.bg_base.clone(),
             width: self.width,
             height: self.height,
         }
@@ -321,7 +285,6 @@ impl Clone for SvgElementGenome {
         Self {
             sequence: self.sequence.clone(),
             sequence_fixed: self.sequence_fixed.clone(),
-            bg_base: self.bg_base.clone(),
             width: self.width,
             height: self.height,
         }
