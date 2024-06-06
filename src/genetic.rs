@@ -130,7 +130,8 @@ impl Experiment {
 
         let mut rng = rand::thread_rng();
         let mut new_population = Vec::new();
-        for _ in 0..self.population.len() {
+        new_population.push((self.population[0].0.clone(), 0.0));
+        for _ in 1..self.population.len() {
             let parent1 = &self.population[dist.sample(&mut rng)].0;
             let parent2 = &self.population[dist.sample(&mut rng)].0;
             let mut child = parent1.cross_with(&parent2);
