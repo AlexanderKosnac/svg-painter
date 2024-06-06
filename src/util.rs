@@ -1,4 +1,6 @@
 use std::path::Path;
+use rand::Rng;
+use std::collections::HashSet;
 
 use resvg;
 use usvg;
@@ -24,6 +26,27 @@ pub fn clamp<T: PartialOrd>(value: T, min: T, max: T) -> T {
     } else {
         value
     }
+}
+
+pub fn random_points_in_range(n: u64, start: u64, end: u64) -> Vec<u64> {
+    let span = end - start;
+    let n_safe = std::cmp::min(span, n);
+    if span == n_safe {
+        return (start..end).collect::<Vec<u64>>();
+    }
+
+    let mut rng = rand::thread_rng();
+    let mut numbers: HashSet<u64> = HashSet::new();
+    numbers.insert(start);
+    numbers.insert(end);
+
+    while (numbers.len() as u64) < n_safe {
+        numbers.insert(rng.gen_range(start..end));
+    }
+
+    let mut points: Vec<u64> = numbers.into_iter().collect();
+    points.sort();
+    points
 }
 
 pub fn read_image(path: &String) -> tiny_skia::Pixmap {

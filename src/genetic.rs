@@ -131,9 +131,11 @@ impl Experiment {
         let mut rng = rand::thread_rng();
         let mut new_population = Vec::new();
         for _ in 0..self.population.len() {
-            let mut new_genome = self.population[dist.sample(&mut rng)].0.clone();
-            new_genome.mutate();
-            new_population.push((new_genome, 0.0));
+            let parent1 = &self.population[dist.sample(&mut rng)].0;
+            let parent2 = &self.population[dist.sample(&mut rng)].0;
+            let mut child = parent1.cross_with(&parent2);
+            child.mutate();
+            new_population.push((child, 0.0));
         }
         self.population = new_population;
     }    
@@ -274,6 +276,26 @@ impl SvgElementGenome {
 
     fn insertion(&mut self, source: &mut BaseSource) {
         self.sequence.push(source.build_base());
+    fn cross_with(&self, other: &SvgElementGenome) -> SvgElementGenome {
+        let crossover_points = util::random_points_in_range(3, 0, self.sequence.len() as u64);
+
+        let mut new_sequence = Vec::new();
+        let mut from_self = true;
+        let mut slice_start = 0;
+        for i in &crossover_points[1..] {
+            let source = if from_self { &self.sequence } else { &other.sequence };
+            from_self = !from_self;
+            new_sequence.extend_from_slice(&source[slice_start..(*i as usize)]);
+            slice_start = *i as usize;
+        }
+        SvgElementGenome {
+            sequence: new_sequence,
+            sequence_fixed: self.sequence_fixed.clone(),
+            bg_base: self.bg_base.clone(),
+            width: self.width,
+            height: self.height,
+        }
+    }
     }
 
     fn fixate(&mut self) {
