@@ -209,10 +209,16 @@ impl StrokeBase {
     fn mutate(&mut self) {
         let m = 5;
         let mut rng = rand::thread_rng();
-        self.x = self.x + rng.gen_range(-m..m);
-        self.y = self.y + rng.gen_range(-m..m);
-        self.rotation = (self.rotation + rng.gen_range(-m..m)) % 360;
-        self.color.mutate(rng.gen_range(0.0..20.0));
+
+        match rng.gen_range(0..=2) {
+            0 => {
+                self.x += rng.gen_range(-m..m);
+                self.y += rng.gen_range(-m..m);
+            },
+            1 => self.rotation = (self.rotation + rng.gen_range(-m..m)) % 360,
+            2 => self.color.mutate(rng.gen_range(0.0..20.0)),
+            _ => panic!("Cannot happen."),
+        }
     }
 }
 
