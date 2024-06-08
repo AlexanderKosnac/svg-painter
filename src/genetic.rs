@@ -4,6 +4,8 @@ use rayon::prelude::*;
 
 use std::fs::File;
 use std::io::Write;
+use std::rc::Rc;
+use std::cell::RefCell;
 
 use rand_distr::Distribution;
 
@@ -15,11 +17,12 @@ use std::cmp;
 use rand::Rng;
 
 use crate::genetic::color::Rgba;
-use crate::BaseSource;
+use crate::Controller;
 
 pub mod color;
 
 pub struct Experiment {
+    controller_rc: Rc<RefCell<Controller>>,
     target: tiny_skia::Pixmap,
     population: Vec<(SvgElementGenome, f64)>,
     generation: u64,
@@ -28,12 +31,13 @@ pub struct Experiment {
 
 impl Experiment {
 
-    pub fn new(target_image_path: &String, population_size: u64) -> Self {
+    pub fn new(controller_rc: Rc<RefCell<Controller>>, target_image_path: &String, population_size: u64) -> Self {
         let target = util::read_image(target_image_path);
         let dim = (target.width(), target.height());
         Self {
+            controller_rc: Rc::clone(&controller_rc),
             target: target,
-            population: (0..population_size).map(|_| (SvgElementGenome::new(dim.0, dim.1), 0.0)).collect(),
+            population: (0..population_size).map(|_| (SvgElementGenome::new(Rc::clone(&controller_rc), dim.0, dim.1), 0.0)).collect(),
             generation: 0,
             fitness_history: Vec::new(),
         }
@@ -61,9 +65,9 @@ impl Experiment {
         }
     }
 
-    pub fn insertion_on_all_individuals(&mut self, source: &mut BaseSource, n: u64) {
+    pub fn insertion_on_all_individuals(&mut self, n: u64) {
         for individual in &mut self.population {
-            individual.0.insertion(source, n);
+            individual.0.insertion(n);
             individual.1 = 0.0;
         }
     }
@@ -149,6 +153,7 @@ static STROKES: [&str; 3] = [
 ];
 
 pub struct StrokeBase {
+    controller_rc: Rc<RefCell<Controller>>,
     stroke_idx: usize,
     x: i32,
     y: i32,
@@ -159,13 +164,16 @@ pub struct StrokeBase {
 }
 
 impl StrokeBase {
-    pub fn new(x: i32, y: i32, scale_x: f32, scale_y: f32) -> Self {
+    pub fn new(controller_rc: Rc<RefCell<Controller>>) -> Self {
         let mut rng = rand::thread_rng();
+        let (x, y) = controller_rc.borrow().get_xy();
+        let (scale_x, scale_y) = controller_rc.borrow().get_scale();
         Self {
+            controller_rc: controller_rc,
             stroke_idx: rng.gen_range(0..STROKES.len()) as usize,
             x: x,
             y: y,
-            rotation: rng.gen_range(0..360) as i32,
+            rotation: rng.gen_range(0..360),
             scale_x: scale_x,
             scale_y: scale_y,
             color: Rgba::new_rand(),
@@ -197,6 +205,7 @@ impl StrokeBase {
 impl Clone for StrokeBase {
     fn clone(&self) -> Self {
         Self {
+            controller_rc: Rc::clone(&self.controller_rc),
             stroke_idx: self.stroke_idx,
             x: self.x,
             y: self.y,
@@ -209,6 +218,7 @@ impl Clone for StrokeBase {
 }
 
 pub struct SvgElementGenome {
+    controller_rc: Rc<RefCell<Controller>>,
     sequence: Vec<StrokeBase>,
     sequence_fixed: Vec<StrokeBase>,
     width: u32,
@@ -216,8 +226,9 @@ pub struct SvgElementGenome {
 }
 
 impl SvgElementGenome {
-    fn new(width: u32, height: u32) -> Self {
+    fn new(controller_rc: Rc<RefCell<Controller>>, width: u32, height: u32) -> Self {
         Self {
+            controller_rc: controller_rc,
             sequence: Vec::new(),
             sequence_fixed: Vec::new(),
             width: width,
@@ -259,6 +270,7 @@ impl SvgElementGenome {
             slice_start = *i as usize;
         }
         SvgElementGenome {
+            controller_rc: Rc::clone(&self.controller_rc),
             sequence: new_sequence,
             sequence_fixed: self.sequence_fixed.clone(),
             width: self.width,
@@ -266,24 +278,21 @@ impl SvgElementGenome {
         }
     }
 
-    fn insertion(&mut self, source: &mut BaseSource, n: u64) {
+    fn insertion(&mut self, n: u64) {
         for _ in 0..n {
-            self.sequence.push(source.build_base());
+            self.sequence.push(StrokeBase::new(Rc::clone(&self.controller_rc)));
         }
     }
 
     fn fixate(&mut self) {
         self.sequence.append(&mut self.sequence_fixed);
     }
-
-    fn len(&self) -> usize {
-        return self.sequence.len();
-    }
 }
 
 impl Clone for SvgElementGenome {
     fn clone(&self) -> Self {
         Self {
+            controller_rc: Rc::clone(&self.controller_rc),
             sequence: self.sequence.clone(),
             sequence_fixed: self.sequence_fixed.clone(),
             width: self.width,
