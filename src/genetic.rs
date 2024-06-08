@@ -258,17 +258,18 @@ impl SvgElementGenome {
     }
 
     fn cross_with(&self, other: &SvgElementGenome) -> SvgElementGenome {
-        let crossover_points = util::random_points_in_range(3, 0, self.sequence.len() as u64);
+        let mut rng = rand::thread_rng();
+
+        let mut sequences = vec![&self.sequence, &other.sequence];
+        sequences.sort_by(|a, b| a.len().cmp(&b.len()));
+        let (short, long) = (sequences[0], sequences[1]);
+
+        let crossover_point_idx = rng.gen_range(0..long.len());
 
         let mut new_sequence = Vec::new();
-        let mut from_self = true;
-        let mut slice_start = 0;
-        for i in &crossover_points[1..] {
-            let source = if from_self { &self.sequence } else { &other.sequence };
-            from_self = !from_self;
-            new_sequence.extend_from_slice(&source[slice_start..(*i as usize)]);
-            slice_start = *i as usize;
-        }
+        new_sequence.extend_from_slice(&short[0..crossover_point_idx]);
+        new_sequence.extend_from_slice(&long[crossover_point_idx..]);
+
         SvgElementGenome {
             controller_rc: Rc::clone(&self.controller_rc),
             sequence: new_sequence,
