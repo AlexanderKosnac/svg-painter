@@ -187,16 +187,12 @@ impl StrokeBase {
     }
 
     fn mutate(&mut self) {
-        let m = 5;
         let mut rng = rand::thread_rng();
 
         match rng.gen_range(0..=2) {
-            0 => {
-                self.x += rng.gen_range(-m..m);
-                self.y += rng.gen_range(-m..m);
-            },
-            1 => self.rotation = (self.rotation + rng.gen_range(-m..m)) % 360,
-            2 => self.color.mutate(rng.gen_range(0.0..20.0)),
+            0 => (self.x, self.y) = self.controller_rc.borrow().get_xy(),
+            1 => self.rotation = rng.gen_range(0..360),
+            2 => self.color = Rgba::new_rand(),
             _ => panic!("Cannot happen."),
         }
     }
@@ -252,8 +248,7 @@ impl SvgElementGenome {
         let candidates: Vec<usize> = (0..bases_to_mutate).map(|_| rng.gen_range(0..range_max)).collect();
 
         for c in candidates {
-            let candidate = &mut self.sequence[c];
-            candidate.mutate();
+            self.sequence[c].mutate();
         }
     }
 
