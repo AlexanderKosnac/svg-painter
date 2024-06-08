@@ -139,7 +139,7 @@ pub struct GraylevelMask {
     rng: rand::rngs::ThreadRng,
     dist: rand_distr::WeightedIndex<f64>,
     width: u32,
-    height: u32,
+    _height: u32,
 }
 
 impl GraylevelMask {
@@ -155,7 +155,7 @@ impl GraylevelMask {
             rng: rand::thread_rng(),
             dist: rand_distr::WeightedIndex::new(&weights).unwrap(),
             width: src.width(),
-            height: src.height(),
+            _height: src.height(),
         }
     }
 
