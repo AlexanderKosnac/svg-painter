@@ -26,13 +26,12 @@ impl Rgba {
         let mut rng = rand::thread_rng();
         let dir_vec: Vec<f64> = (0..4).map(|_| rng.gen_range(-1.0..=1.0)).collect();
         let len = dir_vec.iter().map(|i| i.powf(2.0)).sum::<f64>().sqrt();
-        let normed = dir_vec.iter().map(|i| i/len).collect::<Vec<f64>>();
-        let scaled = normed.iter().map(|i| i*magnitude).collect::<Vec<f64>>();
+        let normed_and_scaled = dir_vec.iter().map(|i| (i/len)*magnitude).collect::<Vec<f64>>();
 
-        self.r = util::bounded_add(self.r, scaled[0] as i64);
-        self.g = util::bounded_add(self.g, scaled[1] as i64);
-        self.b = util::bounded_add(self.b, scaled[2] as i64);
-        self.a = util::bounded_add(self.a, scaled[3] as i64);
+        self.r = util::bounded_add(self.r, normed_and_scaled[0] as i64);
+        self.g = util::bounded_add(self.g, normed_and_scaled[1] as i64);
+        self.b = util::bounded_add(self.b, normed_and_scaled[2] as i64);
+        self.a = util::bounded_add(self.a, normed_and_scaled[3] as i64);
     }
 }
 
