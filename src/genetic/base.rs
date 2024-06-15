@@ -39,6 +39,7 @@ pub struct StrokeBase {
 }
 
 impl StrokeBase {
+
     pub fn new(controller_rc: Rc<RefCell<Controller>>) -> Self {
         let mut rng = rand::thread_rng();
         let (x, y) = controller_rc.borrow().get_xy();
@@ -68,12 +69,13 @@ impl StrokeBase {
             0 => (self.x, self.y) = self.controller_rc.borrow().get_xy(),
             1 => self.rotation = rng.gen_range(0..360),
             2 => self.color = Rgba::new_rand(),
-            _ => panic!("Cannot happen."),
+            _ => panic!("Should be impossible. Check if range of random number properly matches the available options."),
         }
     }
 }
 
 impl Clone for StrokeBase {
+
     fn clone(&self) -> Self {
         Self {
             controller_rc: Rc::clone(&self.controller_rc),

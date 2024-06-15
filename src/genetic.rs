@@ -25,7 +25,7 @@ pub mod color;
 pub mod base;
 pub mod genome;
 
-pub struct Experiment {
+pub struct ImageApproximation {
     controller_rc: Rc<RefCell<Controller>>,
     target: tiny_skia::Pixmap,
     population: Vec<(SvgElementGenome, f64)>,
@@ -33,7 +33,7 @@ pub struct Experiment {
     fitness_history: Vec<f64>,
 }
 
-impl Experiment {
+impl ImageApproximation {
 
     pub fn new(controller_rc: Rc<RefCell<Controller>>, target_image_path: &String, population_size: u64) -> Self {
         let target = util::read_image(target_image_path);
@@ -82,7 +82,12 @@ impl Experiment {
             None => String::from("N/A"),
             Some(i) => format!("{:9.3}", i),
         };
-        println!("Generation {:5}; avg. fit.: {}", self.generation, last_avg_fitness);
+        let mut fit_chg = 0.0;
+        if self.generation > 2 {
+            let idx = self.fitness_history.len();
+            fit_chg = self.fitness_history[idx-2] - self.fitness_history[idx-1];
+        }
+        println!("Generation {:5}; avg. fit.: {}; fit. chg.: {:3.3}", self.generation, last_avg_fitness, fit_chg);
     }
 
     fn evaluate_population(&mut self) {

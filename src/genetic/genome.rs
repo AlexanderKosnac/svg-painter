@@ -30,6 +30,7 @@ pub struct SvgElementGenome {
 }
 
 impl SvgElementGenome {
+
     pub fn new(controller_rc: Rc<RefCell<Controller>>, width: u32, height: u32) -> Self {
         Self {
             controller_rc: controller_rc,
@@ -94,6 +95,7 @@ impl SvgElementGenome {
 }
 
 impl Clone for SvgElementGenome {
+
     fn clone(&self) -> Self {
         Self {
             controller_rc: Rc::clone(&self.controller_rc),
