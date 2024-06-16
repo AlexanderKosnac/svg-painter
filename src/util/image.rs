@@ -138,7 +138,7 @@ fn get_gaussian_blur_kernel(sigma: f64, matrix_radius: u32) -> Vec<Vec<f64>> {
 pub struct GraylevelMask {
     dist: rand_distr::WeightedIndex<f64>,
     width: u32,
-    _height: u32,
+    height: u32,
 }
 
 impl GraylevelMask {
@@ -153,7 +153,7 @@ impl GraylevelMask {
         Self {
             dist: rand_distr::WeightedIndex::new(&weights).unwrap(),
             width: src.width(),
-            _height: src.height(),
+            height: src.height(),
         }
     }
 
@@ -165,5 +165,9 @@ impl GraylevelMask {
     pub fn sample_random_xy(&self) -> (u32, u32) {
         let i = self.sample_random_i();
         ((i as f64 / self.width as f64).floor() as u32, i % self.width)
+    }
+
+    pub fn dim(&self) -> (u32, u32) {
+        (self.width, self.height)
     }
 }

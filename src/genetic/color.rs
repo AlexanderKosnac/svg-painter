@@ -18,6 +18,10 @@ impl Rgba {
         Rgba::new(rng.gen_range(0..255), rng.gen_range(0..255), rng.gen_range(0..255), rng.gen_range(0..255))
     }
 
+    pub fn new_black() -> Self {
+        Self { r: 0, g: 0, b: 0, a: 255 }
+    }
+
     pub fn as_hex(&self) -> String {
         return format!("#{:0>2X}{:0>2X}{:0>2X}", self.r, self.g, self.b);
     }
