@@ -38,7 +38,7 @@ impl ImageApproximation {
             target: target,
             strokes: Vec::new(),
             pixmap_render: tiny_skia::Pixmap::new(width, height).unwrap(),
-            fitness: (width * height * 255 * 4) as f64,
+            fitness: f64::MAX,
         }
     }
 
@@ -57,7 +57,7 @@ impl ImageApproximation {
         }
     }
 
-    pub fn add_stroke(&mut self, controller: &Controller) {
+    pub fn add_stroke(&mut self, controller: &Controller) -> bool {
         let mut rng = rand::thread_rng();
 
         let mut top_stroke = StrokeBase::new();
@@ -87,10 +87,14 @@ impl ImageApproximation {
                 attempts += 1;
             }
         }
-        if top_fitness < self.fitness {
+        return if top_fitness < self.fitness {
             self.strokes.push(top_stroke);
             self.pixmap_render = top_render;
-        }
+            self.fitness = top_fitness;
+            true
+        } else {
+            false
+        };
     }
 
     pub fn express(&self) -> String {
