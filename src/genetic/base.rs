@@ -8,6 +8,7 @@ pub static STROKES: [&str; 4] = [
     "<rect id=\"stroke-1\" width=\"100\" height=\"75\"/>",
     "<rect id=\"stroke-2\" width=\"100\" height=\"50\"/>",
     "<rect id=\"stroke-3\" width=\"100\" height=\"25\"/>",
+pub static STROKE_DIMENSION: (f32, f32) = (100.0, 100.0);
 ];
 
 pub struct StrokeBase {
@@ -56,7 +57,7 @@ impl StrokeBase {
     pub fn express(&self) -> String {
         let stroke = format!("<use href=\"#stroke-{}\"/>", self.stroke_idx);
         let transformations = format!("translate({} {}) rotate({}) scale({:.5} {:.5})", self.x, self.y, self.rotation, self.scale_x, self.scale_y);
-        let opacity = 0.8;
+        let opacity = 0.9;
         let color = self.color.as_hex();
         format!("<g fill-opacity=\"{opacity:.3}\" fill=\"{color}\" transform=\"{transformations}\">{stroke}</g>")
     }

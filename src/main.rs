@@ -18,29 +18,32 @@ fn main() {
 
     let target = util::read_image(raster_image_path);
 
+    //let gauss_result = util::image::gaussian_blur_from_gaussian_function(&target, 2.0, 3);
     let sobel_result = util::image::sobel(&target);
-    sobel_result.save_png(String::from("build/sobel.png")).expect("Unable to create Sobel file");
 
-    let gauss_result = util::image::gaussian_blur_from_gaussian_function(&sobel_result, 2.0, 3);
-    gauss_result.save_png(String::from("build/gauss.png")).expect("Unable to create Gauss file");
+    let mask = sobel_result;
+    mask.save_png(format!("{BUILD}/mask.png")).expect("Unable to create Mask file");
 
     let mut all_white = tiny_skia::Pixmap::new(target.width(), target.height()).unwrap();
     all_white.fill(tiny_skia::Color::WHITE);
 
-    let mut controller = Controller::new(&all_white);
+    let mut controller = Controller::new(&mask);
+    controller.set_scale(calc_scale(&target, 1));
+
     let mut approx = ImageApproximation::new(raster_image_path);
     approx.write_to_file(&genetic::FileType::SVG, &format!("{BUILD}/expr.svg"));
 
-    let mut n = 1;
+    let mut stage = 1;
     loop {
-        approx.add_stroke(&controller);
+        let success = approx.add_stroke(&controller);
+        if !success {
+            stage += 1;
+            let scale = calc_scale(&target, stage);
+            controller.set_scale(scale);
+        }
+
         approx.write_to_file(&genetic::FileType::SVG, &format!("{BUILD}/expr.svg"));
         approx.write_to_file(&genetic::FileType::PNG, &format!("{BUILD}/expr.png"));
-        if n % 10 == 0 {
-            let scale = controller.get_scale();
-            controller.set_scale(((0.1_f32).max(scale.0 * 0.95), (0.1_f32).max(scale.1 * 0.95)));
-        }
-        n += 1;
     }
 }
 
@@ -73,4 +76,11 @@ impl Controller {
     pub fn get_scale(&self) -> (f32, f32) {
         (self.scale_x, self.scale_y)
     }
+}
+
+fn calc_scale(target: &tiny_skia::Pixmap, stage: u32) -> (f32, f32) {
+    (
+        (target.width() as f32)/(genetic::base::STROKE_DIMENSION.0 * 4.0 * stage as f32),
+        (target.height() as f32)/(genetic::base::STROKE_DIMENSION.1 * 4.0 * stage as f32),
+    )
 }
