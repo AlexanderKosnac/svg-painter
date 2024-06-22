@@ -28,12 +28,18 @@ fn main() {
     approx.write_to_file(&genetic::FileType::SVG, &format!("{BUILD}/expr.svg"));
 
     let mut stage = 1;
+    let mut failed_insertions = 0;
     loop {
         let success = approx.add_stroke(&controller);
-        if !success {
-            stage += 1;
-            let scale = calc_scale(&target, stage);
-            controller.set_scale(scale);
+        if success {
+            failed_insertions = 0;
+        } else {
+            failed_insertions += 1;
+            if failed_insertions == 5 {
+                stage += 1;
+                let scale = calc_scale(&target, stage);
+                controller.set_scale(scale);
+            }
         }
 
         approx.write_to_file(&genetic::FileType::SVG, &format!("{BUILD}/expr.svg"));
