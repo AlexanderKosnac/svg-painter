@@ -144,7 +144,6 @@ impl ImageApproximation {
         } else {
             Rgba::new((colors.0/c) as u8, (colors.1/c) as u8, (colors.2/c) as u8, 255)
         }
-        
     }
 
     pub fn approximate_average_color_in_stroke(&self, stroke: &StrokeBase) -> Rgba {
@@ -178,6 +177,9 @@ impl ImageApproximation {
         } else {
             Rgba::new((colors.0/c) as u8, (colors.1/c) as u8, (colors.2/c) as u8, 255)
         }
-        
+    }
+
+    pub fn target_approximation_diffmap(&self) -> tiny_skia::Pixmap {
+        util::image::abs_diff_graylevel_heatmap(&self.target, &self.pixmap_render)
     }
 }

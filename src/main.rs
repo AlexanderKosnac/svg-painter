@@ -44,6 +44,7 @@ fn main() {
 
         approx.write_to_file(&genetic::FileType::SVG, &format!("{BUILD}/expr.svg"));
         approx.write_to_file(&genetic::FileType::PNG, &format!("{BUILD}/expr.png"));
+        approx.target_approximation_diffmap().save_png(format!("{BUILD}/diff.png")).expect("Unable to create diff file");
     }
 }
 
