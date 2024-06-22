@@ -36,9 +36,17 @@ impl StrokeBase {
         }
     }
 
+    pub fn get_xy(&self) -> (i32, i32) {
+        (self.x, self.y)
+    }
+
     pub fn set_xy(&mut self, xy: (i32, i32)) {
         self.x = xy.0;
         self.y = xy.1;
+    }
+
+    pub fn get_scale(&self) -> (f32, f32) {
+        (self.scale_x, self.scale_y)
     }
 
     pub fn set_scale(&mut self, scale: (f32, f32)) {
@@ -57,7 +65,7 @@ impl StrokeBase {
     pub fn express(&self) -> String {
         let stroke = format!("<use href=\"#stroke-{}\"/>", self.stroke_idx);
         let transformations = format!("translate({} {}) rotate({}) scale({:.5} {:.5})", self.x, self.y, self.rotation, self.scale_x, self.scale_y);
-        let opacity = 0.9;
+        let opacity = 1.0;
         let color = self.color.as_hex();
         format!("<g fill-opacity=\"{opacity:.3}\" fill=\"{color}\" transform=\"{transformations}\">{stroke}</g>")
     }

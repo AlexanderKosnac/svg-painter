@@ -18,14 +18,8 @@ fn main() {
 
     let target = util::read_image(raster_image_path);
 
-    //let gauss_result = util::image::gaussian_blur_from_gaussian_function(&target, 2.0, 3);
-    let sobel_result = util::image::sobel(&target);
-
-    let mask = sobel_result;
-    mask.save_png(format!("{BUILD}/mask.png")).expect("Unable to create Mask file");
-
-    let mut all_white = tiny_skia::Pixmap::new(target.width(), target.height()).unwrap();
-    all_white.fill(tiny_skia::Color::WHITE);
+    let mut mask = tiny_skia::Pixmap::new(target.width(), target.height()).unwrap();
+    mask.fill(tiny_skia::Color::WHITE);
 
     let mut controller = Controller::new(&mask);
     controller.set_scale(calc_scale(&target, 1));
@@ -44,7 +38,10 @@ fn main() {
 
         approx.write_to_file(&genetic::FileType::SVG, &format!("{BUILD}/expr.svg"));
         approx.write_to_file(&genetic::FileType::PNG, &format!("{BUILD}/expr.png"));
-        approx.target_approximation_diffmap().save_png(format!("{BUILD}/diff.png")).expect("Unable to create diff file");
+
+        let new_mask = approx.target_approximation_diffmap();
+        new_mask.save_png(format!("{BUILD}/mask.png")).expect("Unable to create mask file");
+        controller.set_mask_from_pixmap(&new_mask);
     }
 }
 
@@ -64,6 +61,10 @@ impl Controller {
         }
     }
 
+    pub fn set_mask_from_pixmap(&mut self, pixmap: &tiny_skia::Pixmap) {
+        self.mask = util::image::GraylevelMask::from(pixmap);
+    }
+
     pub fn get_xy(&self) -> (i32, i32) {
         let xy = self.mask.sample_random_xy();
         (xy.0 as i32, xy.1 as i32)
@@ -76,6 +77,10 @@ impl Controller {
 
     pub fn get_scale(&self) -> (f32, f32) {
         (self.scale_x, self.scale_y)
+    }
+
+    pub fn get_max_attempts(&self) -> u32 {
+        50
     }
 }
 

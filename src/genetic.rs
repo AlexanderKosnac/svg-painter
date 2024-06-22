@@ -1,14 +1,13 @@
 use tiny_skia;
+use tiny_skia::PixmapPaint;
+use tiny_skia::Transform;
 
 use std::fs::File;
 use std::io::Write;
 
-use crate::util;
-
-use tiny_skia::PixmapPaint;
-use tiny_skia::Transform;
-
 use rand::Rng;
+
+use crate::util;
 
 use crate::Controller;
 use crate::genetic::color::Rgba;
@@ -70,7 +69,7 @@ impl ImageApproximation {
         let mut top_fitness = util::pixmap_distance(&top_render, &self.target);
 
         let mut attempts = 0;
-        while attempts < 50 {
+        while attempts < controller.get_max_attempts() {
             let mut new_stroke = top_stroke.clone();
             new_stroke.mutate(controller);
             new_stroke.set_color(self.approximate_average_color_in_stroke(&new_stroke));
