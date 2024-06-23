@@ -172,13 +172,11 @@ impl GraylevelMask {
 
     pub fn from(src: &tiny_skia::Pixmap) -> Self {
         let gray = src.pixels().iter().map(|p| rgba_to_grayscale(p) as f64).collect::<Vec<f64>>();
-        let sum = gray.iter().sum::<f64>();
-        if sum == 0.0 {
-            panic!("Cant use all black image as mask.");
-        }
-        let weights = gray.iter().map(|v| v/sum).collect::<Vec<f64>>();
         Self {
-            dist: rand_distr::WeightedIndex::new(&weights).unwrap(),
+            dist: match rand_distr::WeightedIndex::new(&gray) {
+                Ok(d) => d,
+                Err(_) => rand_distr::WeightedIndex::new(&vec![1.0; gray.len()]).unwrap(),
+            },
             width: src.width(),
             height: src.height(),
         }
