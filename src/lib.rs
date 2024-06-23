@@ -28,6 +28,13 @@ pub fn run(raster_image_path: &String) {
         let success = approx.add_stroke(&controller);
         if success {
             failed_insertions = 0;
+
+            approx.write_to_file(&genetic::FileType::SVG, &format!("{BUILD}/expr.svg"));
+            approx.write_to_file(&genetic::FileType::PNG, &format!("{BUILD}/expr.png"));
+    
+            let new_mask = approx.target_approximation_diffmap();
+            new_mask.save_png(format!("{BUILD}/mask.png")).expect("Unable to create mask file");
+            controller.set_mask_from_pixmap(&new_mask);
         } else {
             failed_insertions += 1;
             if failed_insertions == 5 {
@@ -36,13 +43,6 @@ pub fn run(raster_image_path: &String) {
                 controller.set_scale(scale);
             }
         }
-
-        approx.write_to_file(&genetic::FileType::SVG, &format!("{BUILD}/expr.svg"));
-        approx.write_to_file(&genetic::FileType::PNG, &format!("{BUILD}/expr.png"));
-
-        let new_mask = approx.target_approximation_diffmap();
-        new_mask.save_png(format!("{BUILD}/mask.png")).expect("Unable to create mask file");
-        controller.set_mask_from_pixmap(&new_mask);
     }
 }
 
