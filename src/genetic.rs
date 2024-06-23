@@ -63,7 +63,11 @@ impl ImageApproximation {
         top_stroke.set_xy(controller.get_xy());
         top_stroke.set_rotation(rng.gen_range(0..360));
         top_stroke.set_scale(controller.get_scale());
-        top_stroke.set_color(self.approximate_average_color_in_stroke(&top_stroke));
+
+        match self.approximate_average_color_in_stroke(&top_stroke) {
+            Some(c) => top_stroke.set_color(c),
+            None => return false,
+        };
 
         let mut top_render = self.get_render_with_stroke(&top_stroke);
         let mut top_fitness = util::pixmap_distance(&top_render, &self.target);
@@ -72,15 +76,22 @@ impl ImageApproximation {
         while attempts < controller.get_max_attempts() {
             let mut new_stroke = top_stroke.clone();
             new_stroke.mutate(controller);
-            new_stroke.set_color(self.approximate_average_color_in_stroke(&new_stroke));
+
+            match self.approximate_average_color_in_stroke(&top_stroke) {
+                Some(c) => top_stroke.set_color(c),
+                None => {
+                    attempts += 1;
+                    continue;
+                },
+            };
 
             let new_render = self.get_render_with_stroke(&new_stroke);
             let new_fitness = util::pixmap_distance(&new_render, &self.target);
 
             if new_fitness < top_fitness {
                 top_stroke = new_stroke;
-                top_fitness = new_fitness;
                 top_render = new_render;
+                top_fitness = new_fitness;
                 attempts = 0;
             } else {
                 attempts += 1;
@@ -145,7 +156,7 @@ impl ImageApproximation {
         }
     }
 
-    pub fn approximate_average_color_in_stroke(&self, stroke: &StrokeBase) -> Rgba {
+    pub fn approximate_average_color_in_stroke(&self, stroke: &StrokeBase) -> Option<Rgba> {
         let center = stroke.get_xy();
         let scale = stroke.get_scale();
         let (width, height) = (
@@ -171,11 +182,7 @@ impl ImageApproximation {
             }
         }
 
-        if c == 0 {
-            Rgba::new(0, 0, 0, 255)
-        } else {
-            Rgba::new((colors.0/c) as u8, (colors.1/c) as u8, (colors.2/c) as u8, 255)
-        }
+        if c > 0 { Some(Rgba::new((colors.0/c) as u8, (colors.1/c) as u8, (colors.2/c) as u8, 255)) } else { None }
     }
 
     pub fn target_approximation_diffmap(&self) -> tiny_skia::Pixmap {
