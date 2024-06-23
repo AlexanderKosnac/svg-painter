@@ -148,11 +148,15 @@ pub fn abs_diff_graylevel_heatmap(pixmap1: &tiny_skia::Pixmap, pixmap2: &tiny_sk
         for j in 0..height {
             let c1 = pixmap1.pixel(i as u32, j as u32).expect("Could not get pixel. Checked before, impossible").demultiply();
             let c2 = pixmap2.pixel(i as u32, j as u32).expect("Could not get pixel. Checked before, impossible").demultiply();
-            let r = (c1.red() as i32 - c2.red() as i32).abs() as f64;
-            let g = (c1.green() as i32 - c2.green() as i32).abs() as f64;
-            let b = (c1.blue() as i32 - c2.blue() as i32).abs() as f64;
 
-            let gray = (255.0 * (r + g + b)/max_diff) as u8;
+            let gray = if c1.alpha() == 0 || c2.alpha() == 0 {
+                255
+            } else {
+                let dr = (c1.red() as i32 - c2.red() as i32).abs() as f64;
+                let dg = (c1.green() as i32 - c2.green() as i32).abs() as f64;
+                let db = (c1.blue() as i32 - c2.blue() as i32).abs() as f64;
+                (255.0 * (dr + dg + db)/max_diff) as u8
+            };
 
             let idx = (j * width + i) as usize;
             data[idx] = tiny_skia::PremultipliedColorU8::from_rgba(gray, gray, gray, 255).unwrap();
