@@ -1,5 +1,6 @@
 # Build directories
 /target
+/pkg
 /build
 
 # Images
