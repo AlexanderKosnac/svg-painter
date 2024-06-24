@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <title>svg_painter</title>
+
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="row">
+      <input id="input-file" type="file"/>
+      <input id="start" type="button" value="Run"/>
+    </div>
+    <div class="row justify-content-space-around">
+      <div class="w-40 d-flex flex-column align-items-center">
+        <span>Target</span>
+        <img id="target" class="display-image bg-lightgrey" style="min-height: 20px;" src="" alt=""/>
+        <canvas id="target-canvas" class="display-image bg-lightgrey" style="display: none; border: 1px solid red"></canvas>
+      </div>
+      <div class="w-40 d-flex flex-column align-items-center">
+        <span>Approximation</span>
+        <div id="svg-approximation" class="display-image bg-lightgrey" style="min-height: 20px;"></div>
+      </div>
+    </div>
+
+    <script type="module">
+      import init, { run_js } from "./pkg/svg_painter.js";
+      init().then(() => {
+        let targetImg = document.querySelector("#target");
+        let targetCanvas = document.querySelector("#target-canvas");
+        let runButton = document.querySelector("#start");
+        let fileInput = document.querySelector("#input-file");
+
+        function loadImage() {
+          if (fileInput.files.length < 1) return;
+          const file = fileInput.files[0];
+          const url = URL.createObjectURL(file);
+          targetImg.src = url;
+        }
+
+        runButton.addEventListener("click", async () => {
+          const ctx = targetCanvas.getContext("2d");
+
+          let dim = [targetImg.width, targetImg.height];
+          [targetCanvas.width, targetCanvas.height] = dim;
+
+          ctx.drawImage(target, 0, 0);
+          const data = ctx.getImageData(0, 0, dim[0], dim[1]).data;
+
+          run_js(data.join(","), dim[0], dim[1]);
+        });
+
+        fileInput.addEventListener("change", loadImage);
+
+        if (fileInput.files.length > 0) loadImage();
+      });
+    </script>
+  </body>
+</html>

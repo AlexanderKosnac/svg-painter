@@ -1,0 +1,27 @@
+.w-40 {
+    width: 40%;
+}
+.row {
+    display: flex;
+    padding-bottom: 5px;
+}
+.d-flex {
+    display: flex;
+}
+.flex-column {
+    flex-direction: column;
+}
+.justify-content-space-around {
+    justify-content: space-around;
+}
+.align-items-center {
+    align-items: center;
+}
+.bg-lightgrey {
+    background-color: lightgrey;
+}
+
+.display-image {
+    border: 1px inset black;
+    width: 100%;
+}

@@ -1,11 +1,31 @@
+use wasm_bindgen::prelude::*;
 
 pub mod genetic;
 use genetic::*;
 
 pub mod util;
 
+#[wasm_bindgen(module = "/module.js")]
+extern "C" {
+    fn js_print(svg: &str);
+    fn set_target(svg: &str);
+    fn set_svg(svg: &str);
+}
 
+#[wasm_bindgen]
+pub fn run_js(pixmap_data_str: &str, width: u32, height: u32) {
+    let mut pixmap = tiny_skia::Pixmap::new(width, height).unwrap();
+    let data = pixmap.data_mut();
+    let mut idx = 0;
+    for s in pixmap_data_str.split(",") {
+        data[idx] = s.parse::<u8>().expect("Could not parse pixel data.");
+        idx += 1;
+    }
+    run(&pixmap, render_approx_to_js);
+}
 
+fn render_approx_to_js(img_approx: &ImageApproximation) {
+    set_svg(&img_approx.express());
 pub fn run<F>(target: &tiny_skia::Pixmap, hook_successful_insertion: F) where F: Fn(&ImageApproximation) {
     let mut mask = tiny_skia::Pixmap::new(target.width(), target.height()).unwrap();
     mask.fill(tiny_skia::Color::WHITE);
