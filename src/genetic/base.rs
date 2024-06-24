@@ -84,6 +84,21 @@ impl StrokeBase {
             _ => panic!("Should be impossible. Check if range of random number properly matches the available options."),
         }
     }
+
+    pub fn approximate_pixels(&self) -> Vec<(i32, i32)> {
+        let (width, height) = (
+            ((STROKE_DIMENSION.0 * self.scale_x)/2.0).floor() as i32,
+            ((STROKE_DIMENSION.1 * self.scale_y)/2.0).floor() as i32,
+        );
+
+        let mut pixels = Vec::new();
+        for i in -width..width {
+            for j in -height..height {
+                pixels.push((self.x + i, self.y + j));
+            }
+        }
+        pixels
+    }
 }
 
 impl Clone for StrokeBase {

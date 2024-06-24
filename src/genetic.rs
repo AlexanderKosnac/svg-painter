@@ -157,29 +157,19 @@ impl ImageApproximation {
     }
 
     pub fn approximate_average_color_in_stroke(&self, stroke: &StrokeBase) -> Option<Rgba> {
-        let center = stroke.get_xy();
-        let scale = stroke.get_scale();
-        let (width, height) = (
-            ((base::STROKE_DIMENSION.0 * scale.0)/2.0).floor() as i32,
-            ((base::STROKE_DIMENSION.1 * scale.1)/2.0).floor() as i32,
-        );
-
         let (target_width, target_height) = (self.target.width() as i32, self.target.height() as i32);
 
         let mut colors = (0, 0, 0);
         let mut c = 0;
-        for i in -width..width {
-            for j in -height..height {
-                let xy = (center.0 + i, center.1 + j);
-                if xy.0 < 0 || xy.1 < 0 || xy.0 >= target_width || xy.1 >= target_height {
-                    continue;
-                }
-                let target_pixel = self.target.pixel(xy.0 as u32, xy.1 as u32).expect("Could not get pixel. Is checked, should be impossible.");
-                colors.0 += target_pixel.red() as u64;
-                colors.1 += target_pixel.green() as u64;
-                colors.2 += target_pixel.blue() as u64;
-                c += 1;
+        for xy in stroke.approximate_pixels() {
+            if xy.0 < 0 || xy.1 < 0 || xy.0 >= target_width || xy.1 >= target_height {
+                continue;
             }
+            let target_pixel = self.target.pixel(xy.0 as u32, xy.1 as u32).expect("Could not get pixel. Is checked, should be impossible.");
+            colors.0 += target_pixel.red() as u64;
+            colors.1 += target_pixel.green() as u64;
+            colors.2 += target_pixel.blue() as u64;
+            c += 1;
         }
 
         if c > 0 { Some(Rgba::new((colors.0/c) as u8, (colors.1/c) as u8, (colors.2/c) as u8, 255)) } else { None }
