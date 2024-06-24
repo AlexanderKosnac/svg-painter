@@ -135,7 +135,7 @@ fn get_gaussian_blur_kernel(sigma: f64, matrix_radius: u32) -> Vec<Vec<f64>> {
     return kernel;
 }
 
-pub fn abs_diff_graylevel_heatmap(pixmap1: &tiny_skia::Pixmap, pixmap2: &tiny_skia::Pixmap) -> tiny_skia::Pixmap {
+pub fn abs_diff_in_graylevel(pixmap1: &tiny_skia::Pixmap, pixmap2: &tiny_skia::Pixmap) -> tiny_skia::Pixmap {
     if pixmap1.width() != pixmap2.width() || pixmap1.height() != pixmap2.height() {
         panic!("Can not get difference of two images of different dimensions.");
     }
@@ -149,7 +149,9 @@ pub fn abs_diff_graylevel_heatmap(pixmap1: &tiny_skia::Pixmap, pixmap2: &tiny_sk
             let c1 = pixmap1.pixel(i as u32, j as u32).expect("Could not get pixel. Checked before, impossible").demultiply();
             let c2 = pixmap2.pixel(i as u32, j as u32).expect("Could not get pixel. Checked before, impossible").demultiply();
 
-            let gray = if c1.alpha() == 0 || c2.alpha() == 0 {
+            let gray = if c1.alpha() == 0 {
+                0
+            } else if c2.alpha() == 0 {
                 255
             } else {
                 let dr = (c1.red() as i32 - c2.red() as i32).abs() as f64;

@@ -176,6 +176,6 @@ impl ImageApproximation {
     }
 
     pub fn target_approximation_diffmap(&self) -> tiny_skia::Pixmap {
-        util::image::abs_diff_graylevel_heatmap(&self.target, &self.pixmap_render)
+        util::image::abs_diff_in_graylevel(&self.target, &self.pixmap_render)
     }
 }
