@@ -1,11 +1,11 @@
-use tiny_skia;
-use tiny_skia::PixmapPaint;
-use tiny_skia::Transform;
-
 use std::fs::File;
 use std::io::Write;
 
 use rand::Rng;
+
+use tiny_skia;
+use tiny_skia::PixmapPaint;
+use tiny_skia::Transform;
 
 use crate::util;
 

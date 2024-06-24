@@ -35,7 +35,8 @@ pub fn run(output_path: &String, raster_image_path: &String) {
             controller.set_mask_from_pixmap(&new_mask);
         } else {
             failed_insertions += 1;
-            if failed_insertions == 5 {
+            if failed_insertions == 10 {
+                failed_insertions = 0;
                 stage += 1;
                 let scale = calc_scale(&target, stage);
                 controller.set_scale(scale);
@@ -85,7 +86,7 @@ impl Controller {
 
 fn calc_scale(target: &tiny_skia::Pixmap, stage: u32) -> (f32, f32) {
     (
-        (target.width() as f32)/(genetic::base::STROKE_DIMENSION.0 * 4.0 * stage as f32),
-        (target.height() as f32)/(genetic::base::STROKE_DIMENSION.1 * 4.0 * stage as f32),
+        (target.width() as f32)/(genetic::base::STROKE_DIMENSION.0 * 2.0 * stage as f32),
+        (target.height() as f32)/(genetic::base::STROKE_DIMENSION.1 * 2.0 * stage as f32),
     )
 }
