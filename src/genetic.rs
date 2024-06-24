@@ -130,7 +130,7 @@ impl ImageApproximation {
         return render;
     }
 
-    pub fn average_color_in_stroke(&self, stroke: &StrokeBase) -> Rgba {
+    pub fn average_color_in_stroke(&self, stroke: &StrokeBase) -> Option<Rgba> {
         let mut mask = tiny_skia::Pixmap::new(self.target.width(), self.target.height()).unwrap();
         util::render_svg_into_pixmap(&self.express_stroke(&stroke), &mut mask);
 
@@ -149,11 +149,7 @@ impl ImageApproximation {
             }
             idx += 1;
         }
-        if c == 0 {
-            Rgba::new(0, 0, 0, 255)
-        } else {
-            Rgba::new((colors.0/c) as u8, (colors.1/c) as u8, (colors.2/c) as u8, 255)
-        }
+        if c > 0 { Some(Rgba::new((colors.0/c) as u8, (colors.1/c) as u8, (colors.2/c) as u8, 255)) } else { None }
     }
 
     pub fn approximate_average_color_in_stroke(&self, stroke: &StrokeBase) -> Option<Rgba> {
