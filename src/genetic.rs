@@ -111,7 +111,7 @@ impl ImageApproximation {
         let expressed: String = self.strokes.iter().map(|b| b.express()).collect::<Vec<String>>().join("\n");
         let (width, height) = (self.target.width(), self.target.height());
         let defs = base::STROKES.join("\n");
-        format!("<svg width=\"{width}\" height=\"{height}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{defs}\n</def>\n<rect width=\"100%\" height=\"100%\" fill=\"white\"/>\n{expressed}\n</svg>")
+        format!("<svg width=\"{width}\" height=\"{height}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{defs}\n</def>\n{expressed}\n</svg>")
     }
 
     pub fn express_stroke(&self, stroke: &StrokeBase) -> String {
