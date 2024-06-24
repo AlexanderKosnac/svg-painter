@@ -80,13 +80,13 @@ impl Controller {
     }
 
     pub fn get_max_attempts(&self) -> u32 {
-        50
+        25
     }
 }
 
 fn calc_scale(target: &tiny_skia::Pixmap, stage: u32) -> (f32, f32) {
     (
-        (target.width() as f32)/(genetic::base::STROKE_DIMENSION.0 * 2.0 * stage as f32),
-        (target.height() as f32)/(genetic::base::STROKE_DIMENSION.1 * 2.0 * stage as f32),
+        (target.width() as f32)/(genetic::base::STROKE_DIMENSION.0 * 8.0 * stage as f32),
+        (target.height() as f32)/(genetic::base::STROKE_DIMENSION.1 * 8.0 * stage as f32),
     )
 }
