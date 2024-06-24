@@ -5,11 +5,9 @@ use genetic::*;
 
 pub mod util;
 
-static BUILD: &str = "build";
-
-pub fn run(raster_image_path: &String) {
-    fs::create_dir_all(String::from(BUILD)).expect("Unable to create build directory");
-    fs::copy(raster_image_path, format!("{BUILD}/trgt.png")).expect("Could not copy target file");
+pub fn run(output_path: &String, raster_image_path: &String) {
+    fs::create_dir_all(output_path).expect("Unable to create build directory");
+    fs::copy(raster_image_path, format!("{output_path}/trgt.png")).expect("Could not copy target file");
 
     let target = util::read_image(raster_image_path);
 
@@ -20,7 +18,7 @@ pub fn run(raster_image_path: &String) {
     controller.set_scale(calc_scale(&target, 1));
 
     let mut approx = ImageApproximation::new(raster_image_path);
-    approx.write_to_file(&genetic::FileType::SVG, &format!("{BUILD}/expr.svg"));
+    approx.write_to_file(&genetic::FileType::SVG, &format!("{output_path}/expr.svg"));
 
     let mut stage = 1;
     let mut failed_insertions = 0;
@@ -29,11 +27,11 @@ pub fn run(raster_image_path: &String) {
         if success {
             failed_insertions = 0;
 
-            approx.write_to_file(&genetic::FileType::SVG, &format!("{BUILD}/expr.svg"));
-            approx.write_to_file(&genetic::FileType::PNG, &format!("{BUILD}/expr.png"));
+            approx.write_to_file(&genetic::FileType::SVG, &format!("{output_path}/expr.svg"));
+            approx.write_to_file(&genetic::FileType::PNG, &format!("{output_path}/expr.png"));
     
             let new_mask = approx.target_approximation_diffmap();
-            new_mask.save_png(format!("{BUILD}/mask.png")).expect("Unable to create mask file");
+            new_mask.save_png(format!("{output_path}/mask.png")).expect("Unable to create mask file");
             controller.set_mask_from_pixmap(&new_mask);
         } else {
             failed_insertions += 1;
