@@ -5,16 +5,15 @@ use genetic::*;
 pub mod util;
 
 
-pub fn run<F>(raster_image_path: &String, hook_successful_insertion: F) where F: Fn(&ImageApproximation) {
-    let target = util::read_image(raster_image_path);
 
+pub fn run<F>(target: &tiny_skia::Pixmap, hook_successful_insertion: F) where F: Fn(&ImageApproximation) {
     let mut mask = tiny_skia::Pixmap::new(target.width(), target.height()).unwrap();
     mask.fill(tiny_skia::Color::WHITE);
 
     let mut controller = Controller::new(&mask);
     controller.set_scale(calc_scale(&target, 1));
 
-    let mut approx = ImageApproximation::new(raster_image_path);
+    let mut approx = ImageApproximation::new(target.clone());
     hook_successful_insertion(&approx);
 
     let mut stage = 1;

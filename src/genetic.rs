@@ -30,8 +30,7 @@ pub struct ImageApproximation {
 
 impl ImageApproximation {
 
-    pub fn new(target_image_path: &String) -> Self {
-        let target = util::read_image(target_image_path);
+    pub fn new(target: tiny_skia::Pixmap) -> Self {
         let (width, height) = (target.width(), target.height());
         Self {
             target: target,

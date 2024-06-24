@@ -15,7 +15,7 @@ fn main() {
     fs::create_dir_all(String::from(BUILD)).expect("Unable to create build directory");
     fs::copy(raster_image_path, format!("{BUILD}/trgt.png")).expect("Could not copy target file");
 
-    run(raster_image_path, render_approx_to_filesystem);
+    run(&svg_painter::util::read_image(raster_image_path), render_approx_to_filesystem);
 }
 
 fn render_approx_to_filesystem(img_approx: &ImageApproximation) {
