@@ -42,4 +42,14 @@ init().then(() => {
     fileInput.addEventListener("change", loadImage);
 
     if (fileInput.files.length > 0) loadImage();
+
+    document.querySelector("#download").addEventListener("click", () => {
+        let element = document.createElement("a");
+        element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(svgContainer.innerHTML));
+        element.setAttribute("download", `svg-painting-${new Date().getTime()}.svg`);
+        element.style.display = "none";
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    });
 });
