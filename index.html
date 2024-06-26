@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <title>svg_painter</title>
 
+    <link rel="icon" href="favicon.svg" sizes="any" type="image/svg+xml">
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
@@ -23,37 +24,6 @@
       </div>
     </div>
 
-    <script type="module">
-      import init, { run_js } from "./pkg/svg_painter.js";
-      init().then(() => {
-        let targetImg = document.querySelector("#target");
-        let targetCanvas = document.querySelector("#target-canvas");
-        let runButton = document.querySelector("#start");
-        let fileInput = document.querySelector("#input-file");
-
-        function loadImage() {
-          if (fileInput.files.length < 1) return;
-          const file = fileInput.files[0];
-          const url = URL.createObjectURL(file);
-          targetImg.src = url;
-        }
-
-        runButton.addEventListener("click", async () => {
-          const ctx = targetCanvas.getContext("2d");
-
-          let dim = [targetImg.width, targetImg.height];
-          [targetCanvas.width, targetCanvas.height] = dim;
-
-          ctx.drawImage(target, 0, 0);
-          const data = ctx.getImageData(0, 0, dim[0], dim[1]).data;
-
-          run_js(data.join(","), dim[0], dim[1]);
-        });
-
-        fileInput.addEventListener("change", loadImage);
-
-        if (fileInput.files.length > 0) loadImage();
-      });
-    </script>
+    <script type="module" src="main.js"></script>
   </body>
 </html>
