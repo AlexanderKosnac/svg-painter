@@ -151,7 +151,7 @@ pub fn abs_diff_in_graylevel(pixmap1: &tiny_skia::Pixmap, pixmap2: &tiny_skia::P
 
             let gray = if c1.alpha() == 0 {
                 0
-            } else if c2.alpha() == 0 {
+            } else if c2.alpha() < 255 {
                 255
             } else {
                 let dr = (c1.red() as i32 - c2.red() as i32).abs() as f64;
