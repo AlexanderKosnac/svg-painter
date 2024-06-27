@@ -107,8 +107,9 @@ impl Controller {
 }
 
 fn calc_scale(target: &tiny_skia::Pixmap, stage: u32) -> (f32, f32) {
+    let max_dim = cmp::max(target.width(), target.height()) as f32;
     (
-        (target.width() as f32)/(genetic::base::STROKE_DIMENSION.0 * 8.0 * stage as f32),
-        (target.height() as f32)/(genetic::base::STROKE_DIMENSION.1 * 8.0 * stage as f32),
+        max_dim/(genetic::base::STROKE_DIMENSION.0 * 8.0 * stage as f32),
+        max_dim/(genetic::base::STROKE_DIMENSION.1 * 8.0 * stage as f32),
     )
 }
