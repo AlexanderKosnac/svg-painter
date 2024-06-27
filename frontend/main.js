@@ -34,7 +34,7 @@ init().then(() => {
         const ctx = target.getContext("2d");
         const data = ctx.getImageData(0, 0, target.width, target.height).data;
 
-        worker = new Worker("worker.js", { type: "module" });
+        worker = new Worker("frontend/worker.js", { type: "module" });
 
         worker.onmessage = (e) => {
             switch(e.data[0]) {
