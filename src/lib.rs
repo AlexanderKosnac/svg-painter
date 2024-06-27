@@ -47,7 +47,7 @@ pub fn run<F>(target: &tiny_skia::Pixmap, hook_successful_insertion: F) where F:
             hook_successful_insertion(&approx);
         } else {
             failed_insertions += 1;
-            if failed_insertions == 10 {
+            if failed_insertions == 20 {
                 failed_insertions = 0;
                 stage += 1;
                 let scale = calc_scale(&target, stage);
