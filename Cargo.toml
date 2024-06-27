@@ -2,6 +2,8 @@
 name = "svg_painter"
 version = "0.1.0"
 edition = "2021"
+description = "Recreate a raster based image as a SVG."
+repository = "https://github.com/AlexanderKosnac/svg_painter"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
