@@ -103,3 +103,7 @@ h1 {
 #svg-container:empty ~ #download {
     display: none;
 }
+
+.image-col {
+    min-width: 200px;
+}
