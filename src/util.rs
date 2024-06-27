@@ -72,9 +72,12 @@ pub fn pixmap_distance(d1: &tiny_skia::Pixmap, d2: &tiny_skia::Pixmap) -> f64 {
 }
 
 fn coloru8_norm_2(c1: &tiny_skia::PremultipliedColorU8, c2: &tiny_skia::PremultipliedColorU8) -> f64 {
-    let dr = c1.red() as i32 - c2.red() as i32;
-    let dg = c1.green() as i32 - c2.green() as i32;
-    let db = c1.blue() as i32 - c2.blue() as i32;
-    let da = c1.alpha() as i32 - c2.alpha() as i32;
-    return ((dr*dr + dg*dg + db*db + da*da) as f64).sqrt() as f64;
+    if c1.alpha() == c2.alpha() {
+        let dr = c1.red() as i32 - c2.red() as i32;
+        let dg = c1.green() as i32 - c2.green() as i32;
+        let db = c1.blue() as i32 - c2.blue() as i32;
+        ((dr*dr + dg*dg + db*db) as f64).sqrt() as f64
+    } else {
+        ((255.0*255.0*3.0) as f64).sqrt()
+    }
 }
