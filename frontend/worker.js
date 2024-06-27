@@ -1,4 +1,4 @@
-import init, { run_js } from "./pkg/svg_painter.js";
+import init, { run_js } from "../pkg/svg_painter.js";
 onmessage = (e) => {
     init().then(() => {
         const data = e.data;

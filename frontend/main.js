@@ -1,4 +1,4 @@
-import init from "./pkg/svg_painter.js";
+import init from "../pkg/svg_painter.js";
 init().then(() => {
     let target = document.querySelector("#target");
     let svgContainer = document.querySelector("#svg-container");
