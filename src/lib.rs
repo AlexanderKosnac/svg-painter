@@ -1,5 +1,7 @@
 use wasm_bindgen::prelude::*;
 
+use std::cmp;
+
 pub mod genetic;
 use genetic::*;
 
@@ -89,6 +91,14 @@ impl Controller {
 
     pub fn get_scale(&self) -> (f32, f32) {
         (self.scale_x, self.scale_y)
+    }
+
+    pub fn get_mutation_movement(&self) -> (i32, i32) {
+        let scale = self.get_scale();
+        (
+            cmp::max((genetic::base::STROKE_DIMENSION.0 * scale.0) as i32, 1),
+            cmp::max((genetic::base::STROKE_DIMENSION.1 * scale.1) as i32, 1),
+        )
     }
 
     pub fn get_max_attempts(&self) -> u32 {

@@ -69,12 +69,13 @@ impl StrokeBase {
         format!("<g fill=\"{color}\" transform=\"{transformations}\">{stroke}</g>")
     }
 
-    pub fn mutate(&mut self, _controller: &Controller) {
+    pub fn mutate(&mut self, controller: &Controller) {
         let mut rng = rand::thread_rng();
         match rng.gen_range(0..=1) {
             0 => {
-                self.x += rng.gen_range(-16..16);
-                self.y += rng.gen_range(-16..16);
+                let m = controller.get_mutation_movement();
+                self.x += rng.gen_range(-m.0..m.1);
+                self.y += rng.gen_range(-m.0..m.1);
             },
             1 => {
                 self.rotation += rng.gen_range(-90..90);
