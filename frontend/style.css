@@ -1,22 +1,48 @@
 /* Elements */
+:root {
+    --main-bg-color: #212121;
+    --main-text-color: white;
+    --color-primary-lighter: #738ED0;
+    --color-primary-normal: #4E70C2;
+    --color-primary-darker: #3A59A3;
+    --link-color: var(--color-primary-normal);
+
+}
+
 body {
-    background-color: #212121;
+    color: var(--main-text-color);
+    background-color: var(--main-bg-color);
     font-family: Arial, sans-serif;
-    color: white;
 }
 
 a {
-    color: white;
+    color: var(--main-text-color);
     font-weight: 900;
     text-decoration: underline;
 }
 
 a:hover {
-    text-decoration: coral underline;
+    text-decoration: var(--link-color) underline;
 }
 
 input {
     font-size: 20px;
+}
+
+input:not([type="file"]), input::file-selector-button {
+    color: var(--main-text-color);
+    background-color: var(--main-bg-color);
+    border-color: var(--color-primary-normal);
+    border-radius: 4px;
+    background-color: var(--color-primary-normal);
+}
+
+input:not([type="file"]):hover, input::file-selector-button:hover {
+    background-color: var(--color-primary-lighter);
+}
+
+input:not([type="file"]):active, input::file-selector-button:active {
+    background-color: var(--color-primary-darker);
 }
 
 h1 {
@@ -40,7 +66,6 @@ h1 {
 .flex-column {
     flex-direction: column;
 }
-
 .flex-wrap {
     flex-wrap: wrap;
 }
@@ -69,7 +94,6 @@ h1 {
 .image-container, #svg-container > svg {
     width: 100%;
     max-width: 30vw;
-    border: 3px inset white;
 }
 
 .description {
@@ -81,4 +105,8 @@ h1 {
     margin-left: auto;
     margin-right: auto;
     margin-bottom: 50px;
+}
+
+#svg-container:empty ~ #download {
+    display: none;
 }
