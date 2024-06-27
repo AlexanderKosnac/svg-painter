@@ -110,14 +110,14 @@ impl ImageApproximation {
         let expressed: String = self.strokes.iter().map(|b| b.express()).collect::<Vec<String>>().join("\n");
         let (width, height) = (self.target.width(), self.target.height());
         let defs = base::STROKES.join("\n");
-        format!("<svg viewBox=\"0 0 {width} {height}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{defs}\n</def>\n{expressed}\n</svg>")
+        format!("<svg width=\"{width}\" height=\"{height}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{defs}\n</def>\n{expressed}\n</svg>")
     }
 
     pub fn express_stroke(&self, stroke: &StrokeBase) -> String {
         let expressed = stroke.express();
         let (width, height) = (self.target.width(), self.target.height());
         let defs = base::STROKES.join("\n");
-        format!("<svg viewBox=\"0 0 {width} {height}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{defs}\n</def>\n{expressed}\n</svg>")
+        format!("<svg width=\"{width}\" height=\"{height}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{defs}\n</def>\n{expressed}\n</svg>")
     }
 
     pub fn get_render_with_stroke(&mut self, stroke: &StrokeBase) -> tiny_skia::Pixmap {
