@@ -34,6 +34,9 @@ init().then(() => {
         const ctx = target.getContext("2d");
         const data = ctx.getImageData(0, 0, target.width, target.height).data;
 
+        if (worker) {
+            worker.terminate();
+        }
         worker = new Worker("frontend/worker.js", { type: "module" });
 
         worker.onmessage = (e) => {
