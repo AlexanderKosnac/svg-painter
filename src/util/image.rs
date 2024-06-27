@@ -195,7 +195,7 @@ impl GraylevelMask {
 
     pub fn sample_random_xy(&self) -> (u32, u32) {
         let i = self.sample_random_i();
-        ((i as f64 / self.width as f64).floor() as u32, i % self.width)
+        ((i as f64 / self.height as f64).floor() as u32, i % self.height)
     }
 
     pub fn dim(&self) -> (u32, u32) {
