@@ -2,6 +2,9 @@
 
 Create an SVG based image approximation of a raster-based image.
 
+A basic interface to use it is deployed on [GitHub pages](https://alexanderkosnac.github.io/svg-painter/).
+
+
 ## Build and Run
 
 The project can be built and ran via the respective cargo commands:
