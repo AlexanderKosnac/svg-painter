@@ -65,9 +65,8 @@ impl StrokeBase {
     pub fn express(&self) -> String {
         let stroke = format!("<use href=\"#stroke-{}\"/>", self.stroke_idx);
         let transformations = format!("translate({} {}) rotate({}) scale({:.5} {:.5})", self.x, self.y, self.rotation, self.scale_x, self.scale_y);
-        let opacity = 1.0;
         let color = self.color.as_hex();
-        format!("<g fill-opacity=\"{opacity:.3}\" fill=\"{color}\" transform=\"{transformations}\">{stroke}</g>")
+        format!("<g fill=\"{color}\" transform=\"{transformations}\">{stroke}</g>")
     }
 
     pub fn mutate(&mut self, _controller: &Controller) {
