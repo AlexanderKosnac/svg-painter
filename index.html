@@ -8,19 +8,36 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <div class="row">
-      <input id="input-file" type="file"/>
-      <input id="start" type="button" value="Run"/>
-    </div>
-    <div class="row justify-content-space-around">
-      <div class="w-40 d-flex flex-column align-items-center">
-        <span>Target</span>
-        <img id="target" class="display-image bg-lightgrey" style="min-height: 20px;" src="" alt=""/>
-        <canvas id="target-canvas" class="display-image bg-lightgrey" style="display: none; border: 1px solid red"></canvas>
+    <div class="d-flex flex-column align-items-center content">
+      <h1>svg_painter</h1>
+
+      <div class="d-flex justify-content-center mb-5">
+        <p class="description">
+          This is a deployment of the project <a href="https://github.com/AlexanderKosnac/svg_painter">svg_painter</a>.
+          For this, the Rust code was compiled into <a href="https://developer.mozilla.org/en-US/docs/WebAssembly">WebAssembly</a> and included in this lightweight interface.
+          For information on how it works, check the README of the project.
+          <br><br>
+          The processing is heavily dependent on the image size, meaning smaller images can be done much faster.
+          To get fast results for testing, keep below 200x200 pixels.
+        </p>
       </div>
+  
+      <div class="d-flex justify-content-center gap-2">
+        <input id="input-file" type="file" accept="image/*"/>
+        <input id="start" type="button" value="Run"/>
+        <input id="terminate" type="button" value="Stop"/>
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-space-around mb-5">
       <div class="w-40 d-flex flex-column align-items-center">
-        <span>Approximation</span>
-        <div id="svg-approximation" class="display-image bg-lightgrey" style="min-height: 20px;"></div>
+        <span class="header">Target</span>
+        <canvas id="target" class="image-container"></canvas>
+      </div>
+
+      <div class="w-40 d-flex flex-column align-items-center">
+        <span class="header">Approximation</span>
+        <div id="svg-container" class="mb-5"></div>
         <input id="download" type="button" value="Download SVG"/>
       </div>
     </div>

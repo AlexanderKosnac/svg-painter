@@ -1,33 +1,45 @@
 import init from "./pkg/svg_painter.js";
 init().then(() => {
-    let targetImg = document.querySelector("#target");
-    let targetCanvas = document.querySelector("#target-canvas");
-    let svgApprox = document.querySelector("#svg-approximation");
+    let target = document.querySelector("#target");
+    let svgContainer = document.querySelector("#svg-container");
     let runButton = document.querySelector("#start");
+    let terminateButton = document.querySelector("#terminate");
     let fileInput = document.querySelector("#input-file");
 
     function loadImage() {
         if (fileInput.files.length < 1) return;
         const file = fileInput.files[0];
-        const url = URL.createObjectURL(file);
-        targetImg.src = url;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const ctx = target.getContext("2d");
+
+                target.width = img.width;
+                target.height = img.height;
+                target.style.width = img.width;
+                target.style.height = img.height;
+                target.style.minWidth = img.width;
+
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
     }
 
+    let worker;
+
     runButton.addEventListener("click", () => {
-        const ctx = targetCanvas.getContext("2d");
+        const ctx = target.getContext("2d");
+        const data = ctx.getImageData(0, 0, target.width, target.height).data;
 
-        let dim = [targetImg.width, targetImg.height];
-        [targetCanvas.width, targetCanvas.height] = dim;
-
-        ctx.drawImage(target, 0, 0);
-        const data = ctx.getImageData(0, 0, dim[0], dim[1]).data;
-
-        const worker = new Worker("worker.js", { type: "module" });
+        worker = new Worker("worker.js", { type: "module" });
 
         worker.onmessage = (e) => {
             switch(e.data[0]) {
                 case "SVG":
-                    svgApprox.innerHTML = e.data[1];
+                    svgContainer.innerHTML = e.data[1];
                     break;
                 case "DONE":
                     break;
@@ -36,7 +48,11 @@ init().then(() => {
             }
         };
 
-        worker.postMessage({ pxdata: data, width: dim[0], height: dim[1] });
+        worker.postMessage({ pxdata: data, width: target.width, height: target.height });
+    });
+
+    terminateButton.addEventListener("click", () => {
+        worker.terminate();
     });
 
     fileInput.addEventListener("change", loadImage);
