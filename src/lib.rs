@@ -2,6 +2,8 @@ use wasm_bindgen::prelude::*;
 
 use std::cmp;
 
+pub mod color;
+
 pub mod approximation;
 use approximation::*;
 

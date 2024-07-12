@@ -1,7 +1,7 @@
 use rand::Rng;
 
 use crate::Controller;
-use crate::genetic::color::Rgba;
+use crate::color::Rgba;
 
 pub static STROKE_DIMENSION: (f32, f32) = (100.0, 100.0);
 pub static STROKES: [&str; 4] = [
