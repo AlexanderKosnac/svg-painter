@@ -1,7 +1,7 @@
 use std::fs;
 use std::env;
 
-use svg_painter::genetic::{FileType, ImageApproximation};
+use svg_painter::approximation::{FileType, ImageApproximation};
 
 use svg_painter::run;
 

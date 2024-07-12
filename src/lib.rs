@@ -2,8 +2,8 @@ use wasm_bindgen::prelude::*;
 
 use std::cmp;
 
-pub mod genetic;
-use genetic::*;
+pub mod approximation;
+use approximation::*;
 
 pub mod stroke;
 pub mod util;

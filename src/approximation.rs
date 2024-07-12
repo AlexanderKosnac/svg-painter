@@ -10,11 +10,9 @@ use tiny_skia::Transform;
 use crate::util;
 
 use crate::Controller;
-use crate::genetic::color::Rgba;
+use crate::color::Rgba;
 use crate::stroke;
 use crate::stroke::Stroke;
-
-pub mod color;
 
 pub enum FileType {
     SVG,
