@@ -11,7 +11,7 @@ use crate::util;
 
 use crate::Controller;
 use crate::genetic::color::Rgba;
-use crate::genetic::base::StrokeBase;
+use crate::genetic::base::Stroke;
 
 pub mod color;
 pub mod base;
@@ -23,7 +23,7 @@ pub enum FileType {
 
 pub struct ImageApproximation {
     target: tiny_skia::Pixmap,
-    strokes: Vec<StrokeBase>,
+    strokes: Vec<Stroke>,
     pixmap_render: tiny_skia::Pixmap,
     fitness: f64,
 }
@@ -58,7 +58,7 @@ impl ImageApproximation {
     pub fn add_stroke(&mut self, controller: &Controller) -> bool {
         let mut rng = rand::thread_rng();
 
-        let mut top_stroke = StrokeBase::new();
+        let mut top_stroke = Stroke::new();
         top_stroke.set_xy(controller.get_xy());
         top_stroke.set_rotation(rng.gen_range(0..360));
         top_stroke.set_scale(controller.get_scale());
@@ -113,14 +113,14 @@ impl ImageApproximation {
         format!("<svg width=\"{width}\" height=\"{height}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{defs}\n</def>\n{expressed}\n</svg>")
     }
 
-    pub fn express_stroke(&self, stroke: &StrokeBase) -> String {
+    pub fn express_stroke(&self, stroke: &Stroke) -> String {
         let expressed = stroke.express();
         let (width, height) = (self.target.width(), self.target.height());
         let defs = base::STROKES.join("\n");
         format!("<svg width=\"{width}\" height=\"{height}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{defs}\n</def>\n{expressed}\n</svg>")
     }
 
-    pub fn get_render_with_stroke(&mut self, stroke: &StrokeBase) -> tiny_skia::Pixmap {
+    pub fn get_render_with_stroke(&mut self, stroke: &Stroke) -> tiny_skia::Pixmap {
         let mut stroke_render = tiny_skia::Pixmap::new(self.target.width(), self.target.height()).unwrap();
         util::render_svg_into_pixmap(&self.express_stroke(&stroke), &mut stroke_render);
 
@@ -129,7 +129,7 @@ impl ImageApproximation {
         return render;
     }
 
-    pub fn average_color_in_stroke(&self, stroke: &StrokeBase) -> Option<Rgba> {
+    pub fn average_color_in_stroke(&self, stroke: &Stroke) -> Option<Rgba> {
         let mut mask = tiny_skia::Pixmap::new(self.target.width(), self.target.height()).unwrap();
         util::render_svg_into_pixmap(&self.express_stroke(&stroke), &mut mask);
 
@@ -151,7 +151,7 @@ impl ImageApproximation {
         if c > 0 { Some(Rgba::new((colors.0/c) as u8, (colors.1/c) as u8, (colors.2/c) as u8, 255)) } else { None }
     }
 
-    pub fn approximate_average_color_in_stroke(&self, stroke: &StrokeBase) -> Option<Rgba> {
+    pub fn approximate_average_color_in_stroke(&self, stroke: &Stroke) -> Option<Rgba> {
         let (target_width, target_height) = (self.target.width() as i32, self.target.height() as i32);
 
         let mut colors = (0, 0, 0);
