@@ -11,10 +11,10 @@ use crate::util;
 
 use crate::Controller;
 use crate::genetic::color::Rgba;
-use crate::genetic::base::Stroke;
+use crate::stroke;
+use crate::stroke::Stroke;
 
 pub mod color;
-pub mod base;
 
 pub enum FileType {
     SVG,
@@ -109,14 +109,14 @@ impl ImageApproximation {
     pub fn express(&self) -> String {
         let expressed: String = self.strokes.iter().map(|b| b.express()).collect::<Vec<String>>().join("\n");
         let (width, height) = (self.target.width(), self.target.height());
-        let defs = base::STROKES.join("\n");
+        let defs = stroke::STROKES.join("\n");
         format!("<svg width=\"{width}\" height=\"{height}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{defs}\n</def>\n{expressed}\n</svg>")
     }
 
     pub fn express_stroke(&self, stroke: &Stroke) -> String {
         let expressed = stroke.express();
         let (width, height) = (self.target.width(), self.target.height());
-        let defs = base::STROKES.join("\n");
+        let defs = stroke::STROKES.join("\n");
         format!("<svg width=\"{width}\" height=\"{height}\" xmlns=\"http://www.w3.org/2000/svg\">\n<def>\n{defs}\n</def>\n{expressed}\n</svg>")
     }
 

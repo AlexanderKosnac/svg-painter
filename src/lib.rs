@@ -5,6 +5,7 @@ use std::cmp;
 pub mod genetic;
 use genetic::*;
 
+pub mod stroke;
 pub mod util;
 
 #[wasm_bindgen]
@@ -96,8 +97,8 @@ impl Controller {
     pub fn get_mutation_movement(&self) -> (i32, i32) {
         let scale = self.get_scale();
         (
-            cmp::max((genetic::base::STROKE_DIMENSION.0 * scale.0) as i32, 1),
-            cmp::max((genetic::base::STROKE_DIMENSION.1 * scale.1) as i32, 1),
+            cmp::max((stroke::STROKE_DIMENSION.0 * scale.0) as i32, 1),
+            cmp::max((stroke::STROKE_DIMENSION.1 * scale.1) as i32, 1),
         )
     }
 
@@ -109,7 +110,7 @@ impl Controller {
 fn calc_scale(target: &tiny_skia::Pixmap, stage: u32) -> (f32, f32) {
     let max_dim = cmp::max(target.width(), target.height()) as f32;
     (
-        max_dim/(genetic::base::STROKE_DIMENSION.0 * 8.0 * stage as f32),
-        max_dim/(genetic::base::STROKE_DIMENSION.1 * 8.0 * stage as f32),
+        max_dim/(stroke::STROKE_DIMENSION.0 * 8.0 * stage as f32),
+        max_dim/(stroke::STROKE_DIMENSION.1 * 8.0 * stage as f32),
     )
 }
